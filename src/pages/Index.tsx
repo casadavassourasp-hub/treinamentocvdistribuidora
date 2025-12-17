@@ -1,19 +1,24 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Sidebar } from '@/components/academy/Sidebar';
 import { VideoGrid } from '@/components/academy/VideoGrid';
 import { VideoModal } from '@/components/academy/VideoModal';
 import { AdminPanel } from '@/components/academy/AdminPanel';
 import { useAcademy } from '@/hooks/useAcademy';
+import { useAuth } from '@/hooks/useAuth';
 import { Video } from '@/types/academy';
-import { BookOpen, Settings } from 'lucide-react';
+import { BookOpen, Settings, Loader2 } from 'lucide-react';
 
 const Index = () => {
+  const navigate = useNavigate();
+  const { user, isAdmin, loading: authLoading, signOut } = useAuth();
   const {
     sectors,
     videos,
     allVideos,
     viewMode,
     selectedSectorId,
+    loading: dataLoading,
     setViewMode,
     setSelectedSectorId,
     addSector,
@@ -22,6 +27,29 @@ const Index = () => {
   } = useAcademy();
 
   const [watchingVideo, setWatchingVideo] = useState<Video | null>(null);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/auth');
+    }
+  }, [authLoading, user, navigate]);
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/auth');
+  };
+
+  if (authLoading || dataLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   const pageTitle = viewMode === 'employee' ? 'Meus Treinamentos' : 'Painel Administrativo';
   const PageIcon = viewMode === 'employee' ? BookOpen : Settings;
@@ -32,8 +60,11 @@ const Index = () => {
         sectors={sectors}
         viewMode={viewMode}
         selectedSectorId={selectedSectorId}
+        isAdmin={isAdmin}
+        userName={user.email || undefined}
         onViewModeChange={setViewMode}
         onSectorSelect={setSelectedSectorId}
+        onLogout={handleLogout}
       />
 
       <main className="flex-1 flex flex-col">
@@ -64,7 +95,7 @@ const Index = () => {
 
       <VideoModal
         video={watchingVideo}
-        sectorName={watchingVideo ? getSectorName(watchingVideo.sectorId) : ''}
+        sectorName={watchingVideo ? getSectorName(watchingVideo.sector_id) : ''}
         onClose={() => setWatchingVideo(null)}
       />
     </div>

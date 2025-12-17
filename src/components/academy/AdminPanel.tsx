@@ -8,8 +8,8 @@ import { AddVideoModal } from './AddVideoModal';
 interface AdminPanelProps {
   sectors: Sector[];
   videosCount: number;
-  onAddSector: (name: string) => void;
-  onAddVideo: (video: { title: string; description: string; sectorId: number; youtubeId: string }) => void;
+  onAddSector: (name: string) => Promise<{ error: any }>;
+  onAddVideo: (video: { title: string; description: string; sector_id: string; youtube_id: string }) => Promise<{ error: any }>;
 }
 
 export function AdminPanel({ sectors, videosCount, onAddSector, onAddVideo }: AdminPanelProps) {
@@ -92,8 +92,8 @@ export function AdminPanel({ sectors, videosCount, onAddSector, onAddVideo }: Ad
       {showSectorModal && (
         <AddSectorModal
           onClose={() => setShowSectorModal(false)}
-          onSave={(name) => {
-            onAddSector(name);
+          onSave={async (name) => {
+            await onAddSector(name);
             setShowSectorModal(false);
           }}
         />
@@ -102,8 +102,8 @@ export function AdminPanel({ sectors, videosCount, onAddSector, onAddVideo }: Ad
         <AddVideoModal
           sectors={sectors}
           onClose={() => setShowVideoModal(false)}
-          onSave={(video) => {
-            onAddVideo(video);
+          onSave={async (video) => {
+            await onAddVideo(video);
             setShowVideoModal(false);
           }}
         />

@@ -1,21 +1,27 @@
-import { GraduationCap, User, Settings, FolderOpen } from 'lucide-react';
+import { GraduationCap, User, Settings, FolderOpen, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sector, ViewMode } from '@/types/academy';
 
 interface SidebarProps {
   sectors: Sector[];
   viewMode: ViewMode;
-  selectedSectorId: number | null;
+  selectedSectorId: string | null;
+  isAdmin: boolean;
+  userName?: string;
   onViewModeChange: (mode: ViewMode) => void;
-  onSectorSelect: (sectorId: number | null) => void;
+  onSectorSelect: (sectorId: string | null) => void;
+  onLogout: () => void;
 }
 
 export function Sidebar({
   sectors,
   viewMode,
   selectedSectorId,
+  isAdmin,
+  userName,
   onViewModeChange,
   onSectorSelect,
+  onLogout,
 }: SidebarProps) {
   return (
     <aside className="w-64 bg-sidebar text-sidebar-foreground p-5 flex flex-col min-h-screen">
@@ -35,14 +41,16 @@ export function Sidebar({
           <User className="w-5 h-5 mr-2" />
           Funcionário
         </Button>
-        <Button
-          variant={viewMode === 'admin' ? 'sidebar-active' : 'sidebar'}
-          onClick={() => onViewModeChange('admin')}
-          className="h-11"
-        >
-          <Settings className="w-5 h-5 mr-2" />
-          Administrador
-        </Button>
+        {isAdmin && (
+          <Button
+            variant={viewMode === 'admin' ? 'sidebar-active' : 'sidebar'}
+            onClick={() => onViewModeChange('admin')}
+            className="h-11"
+          >
+            <Settings className="w-5 h-5 mr-2" />
+            Administrador
+          </Button>
+        )}
       </div>
 
       <div className="flex-1">
@@ -79,10 +87,20 @@ export function Sidebar({
         </div>
       </div>
 
-      <div className="pt-4 border-t border-sidebar-border mt-4">
-        <p className="text-xs text-sidebar-muted text-center">
-          © 2024 Empresa Academy
-        </p>
+      <div className="pt-4 border-t border-sidebar-border mt-4 space-y-3">
+        {userName && (
+          <p className="text-xs text-sidebar-muted text-center truncate">
+            {userName}
+          </p>
+        )}
+        <Button
+          variant="sidebar"
+          onClick={onLogout}
+          className="h-10 text-sm"
+        >
+          <LogOut className="w-4 h-4 mr-2" />
+          Sair
+        </Button>
       </div>
     </aside>
   );

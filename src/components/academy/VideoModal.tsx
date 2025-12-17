@@ -37,7 +37,7 @@ export function VideoModal({ video, sectorName, onClose }: VideoModalProps) {
         </div>
         <div className="aspect-video bg-foreground">
           <iframe
-            src={`https://www.youtube.com/embed/${video.youtubeId}?autoplay=1`}
+            src={`https://www.youtube.com/embed/${video.youtube_id}?autoplay=1`}
             className="w-full h-full"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen

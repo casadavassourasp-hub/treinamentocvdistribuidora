@@ -6,13 +6,13 @@ import { Sector } from '@/types/academy';
 interface AddVideoModalProps {
   sectors: Sector[];
   onClose: () => void;
-  onSave: (video: { title: string; description: string; sectorId: number; youtubeId: string }) => void;
+  onSave: (video: { title: string; description: string; sector_id: string; youtube_id: string }) => void;
 }
 
 export function AddVideoModal({ sectors, onClose, onSave }: AddVideoModalProps) {
   const [title, setTitle] = useState('');
   const [url, setUrl] = useState('');
-  const [sectorId, setSectorId] = useState(sectors[0]?.id || 0);
+  const [sectorId, setSectorId] = useState(sectors[0]?.id || '');
   const [description, setDescription] = useState('');
 
   const extractYoutubeId = (url: string): string => {
@@ -22,13 +22,13 @@ export function AddVideoModal({ sectors, onClose, onSave }: AddVideoModalProps) 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const youtubeId = extractYoutubeId(url);
-    if (title.trim() && youtubeId && sectorId) {
+    const youtube_id = extractYoutubeId(url);
+    if (title.trim() && youtube_id && sectorId) {
       onSave({
         title: title.trim(),
         description: description.trim(),
-        sectorId,
-        youtubeId,
+        sector_id: sectorId,
+        youtube_id,
       });
     }
   };
@@ -88,7 +88,7 @@ export function AddVideoModal({ sectors, onClose, onSave }: AddVideoModalProps) 
             </label>
             <select
               value={sectorId}
-              onChange={(e) => setSectorId(Number(e.target.value))}
+              onChange={(e) => setSectorId(e.target.value)}
               className="w-full px-4 py-3 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             >
               {sectors.map((sector) => (
