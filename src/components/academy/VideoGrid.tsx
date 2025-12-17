@@ -4,7 +4,7 @@ import { BookOpen } from 'lucide-react';
 
 interface VideoGridProps {
   videos: Video[];
-  getSectorName: (sectorId: number) => string;
+  getSectorName: (sectorId: string | null) => string;
   onWatch: (video: Video) => void;
 }
 
@@ -31,7 +31,7 @@ export function VideoGrid({ videos, getSectorName, onWatch }: VideoGridProps) {
         <div key={video.id} style={{ animationDelay: `${index * 50}ms` }}>
           <VideoCard
             video={video}
-            sectorName={getSectorName(video.sectorId)}
+            sectorName={getSectorName(video.sector_id)}
             onWatch={onWatch}
           />
         </div>

@@ -13,7 +13,7 @@ export function VideoCard({ video, sectorName, onWatch }: VideoCardProps) {
     <div className="bg-card rounded-xl shadow-card hover:shadow-card-hover transition-all duration-300 overflow-hidden group animate-slide-up">
       <div className="relative aspect-video bg-muted overflow-hidden">
         <img
-          src={`https://img.youtube.com/vi/${video.youtubeId}/mqdefault.jpg`}
+          src={`https://img.youtube.com/vi/${video.youtube_id}/mqdefault.jpg`}
           alt={video.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
