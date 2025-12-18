@@ -23,7 +23,11 @@ const Index = () => {
     setViewMode,
     setSelectedSectorId,
     addSector,
+    updateSector,
+    deleteSector,
     addVideo,
+    updateVideo,
+    deleteVideo,
     getSectorName,
   } = useAcademy();
   
@@ -91,9 +95,15 @@ const Index = () => {
           ) : (
             <AdminPanel
               sectors={sectors}
+              videos={allVideos}
               videosCount={allVideos.length}
               onAddSector={addSector}
+              onUpdateSector={updateSector}
+              onDeleteSector={deleteSector}
               onAddVideo={addVideo}
+              onUpdateVideo={updateVideo}
+              onDeleteVideo={deleteVideo}
+              getSectorName={getSectorName}
             />
           )}
         </section>
