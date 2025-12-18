@@ -70,6 +70,44 @@ export function useAcademy() {
     }
   };
 
+  const updateSector = async (id: string, name: string) => {
+    try {
+      const { error } = await supabase
+        .from('sectors')
+        .update({ name })
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      setSectors((prev) => prev.map((s) => s.id === id ? { ...s, name } : s));
+      toast({ title: 'Setor atualizado com sucesso!' });
+      return { error: null };
+    } catch (error: any) {
+      console.error('Error updating sector:', error);
+      toast({ title: 'Erro ao atualizar setor', description: error.message, variant: 'destructive' });
+      return { error };
+    }
+  };
+
+  const deleteSector = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('sectors')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      setSectors((prev) => prev.filter((s) => s.id !== id));
+      toast({ title: 'Setor excluído com sucesso!' });
+      return { error: null };
+    } catch (error: any) {
+      console.error('Error deleting sector:', error);
+      toast({ title: 'Erro ao excluir setor', description: error.message, variant: 'destructive' });
+      return { error };
+    }
+  };
+
   const addVideo = async (video: { title: string; description: string; sector_id: string; youtube_id: string }) => {
     try {
       const { data: userData } = await supabase.auth.getUser();
@@ -88,6 +126,44 @@ export function useAcademy() {
     } catch (error: any) {
       console.error('Error adding video:', error);
       toast({ title: 'Erro ao adicionar vídeo', description: error.message, variant: 'destructive' });
+      return { error };
+    }
+  };
+
+  const updateVideo = async (id: string, data: { title: string; description: string; sector_id: string; youtube_id: string }) => {
+    try {
+      const { error } = await supabase
+        .from('videos')
+        .update(data)
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      setVideos((prev) => prev.map((v) => v.id === id ? { ...v, ...data } : v));
+      toast({ title: 'Vídeo atualizado com sucesso!' });
+      return { error: null };
+    } catch (error: any) {
+      console.error('Error updating video:', error);
+      toast({ title: 'Erro ao atualizar vídeo', description: error.message, variant: 'destructive' });
+      return { error };
+    }
+  };
+
+  const deleteVideo = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('videos')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      setVideos((prev) => prev.filter((v) => v.id !== id));
+      toast({ title: 'Vídeo excluído com sucesso!' });
+      return { error: null };
+    } catch (error: any) {
+      console.error('Error deleting video:', error);
+      toast({ title: 'Erro ao excluir vídeo', description: error.message, variant: 'destructive' });
       return { error };
     }
   };
@@ -111,7 +187,11 @@ export function useAcademy() {
     setViewMode,
     setSelectedSectorId,
     addSector,
+    updateSector,
+    deleteSector,
     addVideo,
+    updateVideo,
+    deleteVideo,
     getSectorName,
     refetchSectors: fetchSectors,
     refetchVideos: fetchVideos,
