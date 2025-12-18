@@ -1,9 +1,11 @@
-import { useState } from 'react';
-import { Plus, FolderPlus, Video, Users } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Sector } from '@/types/academy';
 import { AddSectorModal } from './AddSectorModal';
 import { AddVideoModal } from './AddVideoModal';
+import { UserManagement } from './UserManagement';
+import { Sector } from '@/types/academy';
+import { Plus, Video, FolderPlus, Users } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AdminPanelProps {
   sectors: Sector[];
@@ -15,6 +17,23 @@ interface AdminPanelProps {
 export function AdminPanel({ sectors, videosCount, onAddSector, onAddVideo }: AdminPanelProps) {
   const [showSectorModal, setShowSectorModal] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
+  const [showUserManagement, setShowUserManagement] = useState(false);
+  const [usersCount, setUsersCount] = useState(0);
+
+  useEffect(() => {
+    fetchUsersCount();
+  }, []);
+
+  const fetchUsersCount = async () => {
+    const { count } = await supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true });
+    setUsersCount(count || 0);
+  };
+
+  if (showUserManagement) {
+    return <UserManagement onBack={() => setShowUserManagement(false)} />;
+  }
 
   return (
     <div className="space-y-6">
@@ -42,17 +61,20 @@ export function AdminPanel({ sectors, videosCount, onAddSector, onAddVideo }: Ad
             </div>
           </div>
         </div>
-        <div className="bg-card rounded-xl p-5 shadow-card">
+        <button
+          onClick={() => setShowUserManagement(true)}
+          className="bg-card rounded-xl p-5 shadow-card text-left hover:ring-2 hover:ring-primary/20 transition-all"
+        >
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-secondary/10 rounded-xl flex items-center justify-center">
               <Users className="w-6 h-6 text-secondary" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-card-foreground">--</p>
+              <p className="text-2xl font-bold text-card-foreground">{usersCount}</p>
               <p className="text-sm text-muted-foreground">Funcionários</p>
             </div>
           </div>
-        </div>
+        </button>
       </div>
 
       {/* Actions */}
@@ -66,6 +88,10 @@ export function AdminPanel({ sectors, videosCount, onAddSector, onAddVideo }: Ad
           <Button onClick={() => setShowVideoModal(true)}>
             <Plus className="w-4 h-4" />
             Novo Vídeo
+          </Button>
+          <Button variant="secondary" onClick={() => setShowUserManagement(true)}>
+            <Users className="w-4 h-4" />
+            Gerenciar Usuários
           </Button>
         </div>
       </div>
