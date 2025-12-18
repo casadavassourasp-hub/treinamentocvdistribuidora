@@ -1,13 +1,27 @@
-import { X } from 'lucide-react';
+import { useEffect } from 'react';
+import { X, CheckCircle } from 'lucide-react';
 import { Video } from '@/types/academy';
 
 interface VideoModalProps {
   video: Video | null;
   sectorName: string;
+  watched?: boolean;
   onClose: () => void;
+  onMarkWatched?: (videoId: string) => void;
 }
 
-export function VideoModal({ video, sectorName, onClose }: VideoModalProps) {
+export function VideoModal({ video, sectorName, watched = false, onClose, onMarkWatched }: VideoModalProps) {
+  useEffect(() => {
+    if (video && onMarkWatched) {
+      // Mark as watched after 5 seconds of viewing
+      const timer = setTimeout(() => {
+        onMarkWatched(video.id);
+      }, 5000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [video, onMarkWatched]);
+
   if (!video) return null;
 
   return (
@@ -20,13 +34,21 @@ export function VideoModal({ video, sectorName, onClose }: VideoModalProps) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="bg-primary p-4 flex items-center justify-between">
-          <div>
-            <h3 className="text-primary-foreground font-semibold text-lg">
-              {video.title}
-            </h3>
-            <span className="text-primary-foreground/70 text-sm">
-              {sectorName}
-            </span>
+          <div className="flex items-center gap-3">
+            <div>
+              <h3 className="text-primary-foreground font-semibold text-lg">
+                {video.title}
+              </h3>
+              <span className="text-primary-foreground/70 text-sm">
+                {sectorName}
+              </span>
+            </div>
+            {watched && (
+              <div className="bg-green-500 text-white px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1">
+                <CheckCircle className="w-3 h-3" />
+                Assistido
+              </div>
+            )}
           </div>
           <button
             onClick={onClose}
