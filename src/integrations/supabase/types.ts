@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          badge_color: string | null
+          created_at: string | null
+          description: string | null
+          icon: string
+          id: string
+          name: string
+          points_required: number | null
+          sectors_required: number | null
+          streak_required: number | null
+          videos_required: number | null
+        }
+        Insert: {
+          badge_color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon: string
+          id?: string
+          name: string
+          points_required?: number | null
+          sectors_required?: number | null
+          streak_required?: number | null
+          videos_required?: number | null
+        }
+        Update: {
+          badge_color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string
+          id?: string
+          name?: string
+          points_required?: number | null
+          sectors_required?: number | null
+          streak_required?: number | null
+          videos_required?: number | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -53,6 +92,74 @@ export type Database = {
           created_by?: string | null
           id?: string
           name?: string
+        }
+        Relationships: []
+      }
+      user_achievements: {
+        Row: {
+          achievement_id: string
+          earned_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          achievement_id: string
+          earned_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          achievement_id?: string
+          earned_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_points: {
+        Row: {
+          created_at: string | null
+          current_streak: number | null
+          id: string
+          last_activity_date: string | null
+          longest_streak: number | null
+          sectors_completed: number | null
+          total_points: number | null
+          updated_at: string | null
+          user_id: string
+          videos_watched: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_streak?: number | null
+          id?: string
+          last_activity_date?: string | null
+          longest_streak?: number | null
+          sectors_completed?: number | null
+          total_points?: number | null
+          updated_at?: string | null
+          user_id: string
+          videos_watched?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          current_streak?: number | null
+          id?: string
+          last_activity_date?: string | null
+          longest_streak?: number | null
+          sectors_completed?: number | null
+          total_points?: number | null
+          updated_at?: string | null
+          user_id?: string
+          videos_watched?: number | null
         }
         Relationships: []
       }
