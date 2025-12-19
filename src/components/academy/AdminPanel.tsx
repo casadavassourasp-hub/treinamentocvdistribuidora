@@ -7,8 +7,9 @@ import { EditSectorModal } from './EditSectorModal';
 import { DeleteConfirmDialog } from './DeleteConfirmDialog';
 import { UserManagement } from './UserManagement';
 import { VideoList } from './VideoList';
+import { EmployeeProgressReport } from './EmployeeProgressReport';
 import { Sector, Video } from '@/types/academy';
-import { Plus, Video as VideoIcon, FolderPlus, Users, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Video as VideoIcon, FolderPlus, Users, Pencil, Trash2, BarChart3 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface AdminPanelProps {
@@ -39,6 +40,7 @@ export function AdminPanel({
   const [showSectorModal, setShowSectorModal] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [showUserManagement, setShowUserManagement] = useState(false);
+  const [showProgressReport, setShowProgressReport] = useState(false);
   const [usersCount, setUsersCount] = useState(0);
   
   // Edit/Delete state
@@ -74,6 +76,10 @@ export function AdminPanel({
     setDeleteLoading(false);
     setDeletingSector(null);
   };
+
+  if (showProgressReport) {
+    return <EmployeeProgressReport onBack={() => setShowProgressReport(false)} />;
+  }
 
   if (showUserManagement) {
     return <UserManagement onBack={() => setShowUserManagement(false)} />;
@@ -136,6 +142,10 @@ export function AdminPanel({
           <Button variant="secondary" onClick={() => setShowUserManagement(true)}>
             <Users className="w-4 h-4" />
             Gerenciar Usuários
+          </Button>
+          <Button variant="outline" onClick={() => setShowProgressReport(true)}>
+            <BarChart3 className="w-4 h-4" />
+            Relatório de Progresso
           </Button>
         </div>
       </div>

@@ -4,9 +4,13 @@ import { Sidebar } from '@/components/academy/Sidebar';
 import { VideoGrid } from '@/components/academy/VideoGrid';
 import { VideoModal } from '@/components/academy/VideoModal';
 import { AdminPanel } from '@/components/academy/AdminPanel';
+import { Leaderboard } from '@/components/academy/Leaderboard';
+import { AchievementBadges } from '@/components/academy/AchievementBadges';
+import { UserStatsCard } from '@/components/academy/UserStatsCard';
 import { useAcademy } from '@/hooks/useAcademy';
 import { useAuth } from '@/hooks/useAuth';
 import { useVideoProgress } from '@/hooks/useVideoProgress';
+import { useGamification } from '@/hooks/useGamification';
 import { Video } from '@/types/academy';
 import { BookOpen, Settings, Loader2 } from 'lucide-react';
 
@@ -32,6 +36,15 @@ const Index = () => {
   } = useAcademy();
   
   const { isWatched, markAsWatched, getWatchedCount, loading: progressLoading } = useVideoProgress();
+  const { 
+    userPoints, 
+    achievements, 
+    userAchievements, 
+    leaderboard, 
+    loading: gamificationLoading,
+    getUserRank,
+    refetch: refetchGamification
+  } = useGamification();
 
   const [watchingVideo, setWatchingVideo] = useState<Video | null>(null);
 
@@ -44,6 +57,12 @@ const Index = () => {
   const handleLogout = async () => {
     await signOut();
     navigate('/auth');
+  };
+
+  const handleMarkWatched = async (videoId: string) => {
+    await markAsWatched(videoId);
+    // Refetch gamification data after watching a video
+    setTimeout(() => refetchGamification(), 1000);
   };
 
   if (authLoading || dataLoading || progressLoading) {
@@ -60,6 +79,8 @@ const Index = () => {
 
   const pageTitle = viewMode === 'employee' ? 'Meus Treinamentos' : 'Painel Administrativo';
   const PageIcon = viewMode === 'employee' ? BookOpen : Settings;
+
+  const unlockedAchievementIds = new Set(userAchievements.map((ua) => ua.achievement_id));
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -84,14 +105,40 @@ const Index = () => {
 
         <section className="flex-1 p-6 overflow-y-auto">
           {viewMode === 'employee' ? (
-            <VideoGrid
-              videos={videos}
-              getSectorName={getSectorName}
-              onWatch={setWatchingVideo}
-              isWatched={isWatched}
-              watchedCount={getWatchedCount()}
-              totalCount={allVideos.length}
-            />
+            <div className="space-y-6">
+              {/* User Stats */}
+              <UserStatsCard 
+                userPoints={userPoints} 
+                userRank={getUserRank()} 
+                loading={gamificationLoading}
+              />
+
+              {/* Achievements */}
+              <AchievementBadges 
+                achievements={achievements} 
+                unlockedIds={unlockedAchievementIds}
+                loading={gamificationLoading}
+              />
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Videos Grid */}
+                <div className="lg:col-span-2">
+                  <VideoGrid
+                    videos={videos}
+                    getSectorName={getSectorName}
+                    onWatch={setWatchingVideo}
+                    isWatched={isWatched}
+                    watchedCount={getWatchedCount()}
+                    totalCount={allVideos.length}
+                  />
+                </div>
+
+                {/* Leaderboard */}
+                <div className="lg:col-span-1">
+                  <Leaderboard entries={leaderboard} loading={gamificationLoading} />
+                </div>
+              </div>
+            </div>
           ) : (
             <AdminPanel
               sectors={sectors}
@@ -114,7 +161,7 @@ const Index = () => {
         sectorName={watchingVideo ? getSectorName(watchingVideo.sector_id) : ''}
         watched={watchingVideo ? isWatched(watchingVideo.id) : false}
         onClose={() => setWatchingVideo(null)}
-        onMarkWatched={markAsWatched}
+        onMarkWatched={handleMarkWatched}
       />
     </div>
   );
