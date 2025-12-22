@@ -80,7 +80,7 @@ const Auth = () => {
             <GraduationCap className="w-8 h-8 text-primary" />
           </div>
           <div>
-            <CardTitle className="text-2xl font-bold">Empresa Academy</CardTitle>
+            <CardTitle className="text-2xl font-bold">Treinamento CV Distribuidora</CardTitle>
             <CardDescription className="mt-2">
               {isLogin ? 'Faça login para acessar seus treinamentos' : 'Crie sua conta para começar'}
             </CardDescription>
