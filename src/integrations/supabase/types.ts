@@ -181,6 +181,41 @@ export type Database = {
         }
         Relationships: []
       }
+      user_sector_points: {
+        Row: {
+          id: string
+          points: number | null
+          sector_id: string
+          updated_at: string | null
+          user_id: string
+          videos_watched: number | null
+        }
+        Insert: {
+          id?: string
+          points?: number | null
+          sector_id: string
+          updated_at?: string | null
+          user_id: string
+          videos_watched?: number | null
+        }
+        Update: {
+          id?: string
+          points?: number | null
+          sector_id?: string
+          updated_at?: string | null
+          user_id?: string
+          videos_watched?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_sector_points_sector_id_fkey"
+            columns: ["sector_id"]
+            isOneToOne: false
+            referencedRelation: "sectors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       video_progress: {
         Row: {
           created_at: string

@@ -40,9 +40,11 @@ const Index = () => {
     userPoints, 
     achievements, 
     userAchievements, 
-    leaderboard, 
+    leaderboard,
+    sectorLeaderboard,
     loading: gamificationLoading,
     getUserRank,
+    fetchSectorLeaderboard,
     refetch: refetchGamification
   } = useGamification();
 
@@ -135,7 +137,17 @@ const Index = () => {
 
                 {/* Leaderboard */}
                 <div className="lg:col-span-1">
-                  <Leaderboard entries={leaderboard} loading={gamificationLoading} />
+                  <Leaderboard 
+                    entries={leaderboard} 
+                    sectorEntries={sectorLeaderboard}
+                    sectors={sectors}
+                    loading={gamificationLoading}
+                    onSectorChange={(sectorId) => {
+                      if (sectorId) {
+                        fetchSectorLeaderboard(sectorId);
+                      }
+                    }}
+                  />
                 </div>
               </div>
             </div>

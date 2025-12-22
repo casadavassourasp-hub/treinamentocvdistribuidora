@@ -40,3 +40,13 @@ export interface LeaderboardEntry {
   current_streak: number;
   rank: number;
 }
+
+export interface SectorLeaderboardEntry {
+  user_id: string;
+  full_name: string | null;
+  email: string | null;
+  sector_id: string;
+  points: number;
+  videos_watched: number;
+  rank: number;
+}
