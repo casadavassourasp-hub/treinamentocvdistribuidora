@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
-import { UserPoints, Achievement, UserAchievement, LeaderboardEntry } from '@/types/gamification';
+import { UserPoints, Achievement, UserAchievement, LeaderboardEntry, SectorLeaderboardEntry } from '@/types/gamification';
 
 export function useGamification() {
   const { user } = useAuth();
@@ -9,6 +9,7 @@ export function useGamification() {
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [userAchievements, setUserAchievements] = useState<UserAchievement[]>([]);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [sectorLeaderboard, setSectorLeaderboard] = useState<SectorLeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchUserPoints = useCallback(async () => {
@@ -105,6 +106,54 @@ export function useGamification() {
     setLeaderboard(entries);
   }, []);
 
+  const fetchSectorLeaderboard = useCallback(async (sectorId: string) => {
+    const { data: sectorPointsData, error: sectorError } = await supabase
+      .from('user_sector_points')
+      .select('user_id, sector_id, points, videos_watched')
+      .eq('sector_id', sectorId)
+      .order('points', { ascending: false })
+      .limit(10);
+
+    if (sectorError) {
+      console.error('Error fetching sector leaderboard:', sectorError);
+      return;
+    }
+
+    if (!sectorPointsData || sectorPointsData.length === 0) {
+      setSectorLeaderboard([]);
+      return;
+    }
+
+    // Fetch profiles for users in sector leaderboard
+    const userIds = sectorPointsData.map((p) => p.user_id);
+    const { data: profilesData, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, full_name, email')
+      .in('id', userIds);
+
+    if (profilesError) {
+      console.error('Error fetching profiles:', profilesError);
+      return;
+    }
+
+    const profilesMap = new Map(profilesData?.map((p) => [p.id, p]));
+
+    const entries: SectorLeaderboardEntry[] = sectorPointsData.map((p, index) => {
+      const profile = profilesMap.get(p.user_id);
+      return {
+        user_id: p.user_id,
+        full_name: profile?.full_name || null,
+        email: profile?.email || null,
+        sector_id: p.sector_id,
+        points: p.points ?? 0,
+        videos_watched: p.videos_watched ?? 0,
+        rank: index + 1,
+      };
+    });
+
+    setSectorLeaderboard(entries);
+  }, []);
+
   const checkAndUnlockAchievements = useCallback(async () => {
     if (!user || !userPoints) return;
 
@@ -172,9 +221,11 @@ export function useGamification() {
     achievements,
     userAchievements,
     leaderboard,
+    sectorLeaderboard,
     loading,
     getUserRank,
     isAchievementUnlocked,
+    fetchSectorLeaderboard,
     refetch: async () => {
       await Promise.all([fetchUserPoints(), fetchLeaderboard(), fetchUserAchievements()]);
     },
