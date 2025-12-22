@@ -2,7 +2,15 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ArrowUpDown, Users, Flame, Trophy, Video } from 'lucide-react';
+import { ArrowLeft, ArrowUpDown, Users, Flame, Trophy, Video, ChevronDown, ChevronRight, FolderOpen } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+
+interface SectorPoints {
+  sector_id: string;
+  sector_name: string;
+  points: number;
+  videos_watched: number;
+}
 
 interface EmployeeProgress {
   user_id: string;
@@ -12,6 +20,7 @@ interface EmployeeProgress {
   videos_watched: number;
   current_streak: number;
   longest_streak: number;
+  sector_points: SectorPoints[];
 }
 
 interface EmployeeProgressReportProps {
@@ -26,37 +35,48 @@ export function EmployeeProgressReport({ onBack }: EmployeeProgressReportProps) 
   const [loading, setLoading] = useState(true);
   const [sortField, setSortField] = useState<SortField>('points');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const fetchEmployeeProgress = async () => {
       setLoading(true);
 
-      // Fetch all profiles
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, full_name, email');
+      // Fetch all data in parallel
+      const [profilesResult, pointsResult, sectorPointsResult, sectorsResult] = await Promise.all([
+        supabase.from('profiles').select('id, full_name, email'),
+        supabase.from('user_points').select('user_id, total_points, videos_watched, current_streak, longest_streak'),
+        supabase.from('user_sector_points').select('user_id, sector_id, points, videos_watched'),
+        supabase.from('sectors').select('id, name'),
+      ]);
 
-      if (profilesError) {
-        console.error('Error fetching profiles:', profilesError);
+      if (profilesResult.error) {
+        console.error('Error fetching profiles:', profilesResult.error);
         setLoading(false);
         return;
       }
 
-      // Fetch all user points
-      const { data: points, error: pointsError } = await supabase
-        .from('user_points')
-        .select('user_id, total_points, videos_watched, current_streak, longest_streak');
+      const pointsMap = new Map(pointsResult.data?.map((p) => [p.user_id, p]));
+      const sectorsMap = new Map(sectorsResult.data?.map((s) => [s.id, s.name]));
+      
+      // Group sector points by user
+      const userSectorPointsMap = new Map<string, SectorPoints[]>();
+      sectorPointsResult.data?.forEach((sp) => {
+        const existing = userSectorPointsMap.get(sp.user_id) || [];
+        existing.push({
+          sector_id: sp.sector_id,
+          sector_name: sectorsMap.get(sp.sector_id) || 'Setor Desconhecido',
+          points: sp.points ?? 0,
+          videos_watched: sp.videos_watched ?? 0,
+        });
+        userSectorPointsMap.set(sp.user_id, existing);
+      });
 
-      if (pointsError) {
-        console.error('Error fetching points:', pointsError);
-        setLoading(false);
-        return;
-      }
-
-      const pointsMap = new Map(points?.map((p) => [p.user_id, p]));
-
-      const employeeData: EmployeeProgress[] = (profiles || []).map((profile) => {
+      const employeeData: EmployeeProgress[] = (profilesResult.data || []).map((profile) => {
         const userPoints = pointsMap.get(profile.id);
+        const sectorPoints = userSectorPointsMap.get(profile.id) || [];
+        // Sort sector points by points descending
+        sectorPoints.sort((a, b) => b.points - a.points);
+        
         return {
           user_id: profile.id,
           full_name: profile.full_name,
@@ -65,6 +85,7 @@ export function EmployeeProgressReport({ onBack }: EmployeeProgressReportProps) 
           videos_watched: userPoints?.videos_watched || 0,
           current_streak: userPoints?.current_streak || 0,
           longest_streak: userPoints?.longest_streak || 0,
+          sector_points: sectorPoints,
         };
       });
 
@@ -82,6 +103,18 @@ export function EmployeeProgressReport({ onBack }: EmployeeProgressReportProps) 
       setSortField(field);
       setSortDirection('desc');
     }
+  };
+
+  const toggleRow = (userId: string) => {
+    setExpandedRows((prev) => {
+      const next = new Set(prev);
+      if (next.has(userId)) {
+        next.delete(userId);
+      } else {
+        next.add(userId);
+      }
+      return next;
+    });
   };
 
   const sortedEmployees = [...employees].sort((a, b) => {
@@ -180,6 +213,7 @@ export function EmployeeProgressReport({ onBack }: EmployeeProgressReportProps) 
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-12"></TableHead>
                 <TableHead className="w-12">#</TableHead>
                 <TableHead>
                   <button
@@ -221,34 +255,78 @@ export function EmployeeProgressReport({ onBack }: EmployeeProgressReportProps) 
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sortedEmployees.map((employee, index) => (
-                <TableRow key={employee.user_id}>
-                  <TableCell className="font-medium text-muted-foreground">
-                    {index + 1}
-                  </TableCell>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium text-card-foreground">
-                        {employee.full_name || 'Sem nome'}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{employee.email}</p>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span className="font-semibold text-yellow-500">{employee.total_points}</span>
-                  </TableCell>
-                  <TableCell>{employee.videos_watched}</TableCell>
-                  <TableCell>
-                    <span className="flex items-center gap-1">
-                      {employee.current_streak > 0 && (
-                        <Flame className="w-4 h-4 text-orange-500" />
-                      )}
-                      {employee.current_streak}d
-                    </span>
-                  </TableCell>
-                  <TableCell>{employee.longest_streak}d</TableCell>
-                </TableRow>
-              ))}
+              {sortedEmployees.map((employee, index) => {
+                const isExpanded = expandedRows.has(employee.user_id);
+                const hasSectorData = employee.sector_points.length > 0;
+
+                return (
+                  <>
+                    <TableRow key={employee.user_id} className={hasSectorData ? 'cursor-pointer hover:bg-muted/50' : ''} onClick={() => hasSectorData && toggleRow(employee.user_id)}>
+                      <TableCell className="w-12">
+                        {hasSectorData && (
+                          <span className="text-muted-foreground">
+                            {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell className="font-medium text-muted-foreground">
+                        {index + 1}
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium text-card-foreground">
+                            {employee.full_name || 'Sem nome'}
+                          </p>
+                          <p className="text-xs text-muted-foreground">{employee.email}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span className="font-semibold text-yellow-500">{employee.total_points}</span>
+                      </TableCell>
+                      <TableCell>{employee.videos_watched}</TableCell>
+                      <TableCell>
+                        <span className="flex items-center gap-1">
+                          {employee.current_streak > 0 && (
+                            <Flame className="w-4 h-4 text-orange-500" />
+                          )}
+                          {employee.current_streak}d
+                        </span>
+                      </TableCell>
+                      <TableCell>{employee.longest_streak}d</TableCell>
+                    </TableRow>
+                    
+                    {/* Sector details row */}
+                    {isExpanded && employee.sector_points.length > 0 && (
+                      <TableRow key={`${employee.user_id}-sectors`} className="bg-muted/30">
+                        <TableCell colSpan={7} className="py-3 px-8">
+                          <div className="space-y-2">
+                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
+                              Pontuação por Setor
+                            </p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                              {employee.sector_points.map((sp) => (
+                                <div
+                                  key={sp.sector_id}
+                                  className="flex items-center justify-between bg-card rounded-lg px-3 py-2 border border-border"
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <FolderOpen className="w-4 h-4 text-primary" />
+                                    <span className="text-sm font-medium text-card-foreground">{sp.sector_name}</span>
+                                  </div>
+                                  <div className="flex items-center gap-3 text-xs">
+                                    <span className="text-muted-foreground">{sp.videos_watched} vídeos</span>
+                                    <span className="font-semibold text-yellow-500">{sp.points} pts</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </>
+                );
+              })}
             </TableBody>
           </Table>
         )}
