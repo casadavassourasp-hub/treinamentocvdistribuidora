@@ -88,6 +88,7 @@ const Index = () => {
     <div className="flex min-h-screen bg-background">
       <Sidebar
         sectors={sectors}
+        videos={allVideos}
         viewMode={viewMode}
         selectedSectorId={selectedSectorId}
         isAdmin={isAdmin}
