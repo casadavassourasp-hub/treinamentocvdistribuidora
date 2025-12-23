@@ -1,44 +1,24 @@
-import { useState } from 'react';
-import { Video, Sector } from '@/types/academy';
+import { Video } from '@/types/academy';
 import { Button } from '@/components/ui/button';
 import { Pencil, Trash2, Play } from 'lucide-react';
 
 interface VideoListProps {
   videos: Video[];
-  sectors: Sector[];
   getSectorName: (sectorId: string | null) => string;
   onEdit: (video: Video) => void;
   onDelete: (video: Video) => void;
 }
 
-export function VideoList({ videos, sectors, getSectorName, onEdit, onDelete }: VideoListProps) {
-  const [filterSectorId, setFilterSectorId] = useState<string>('');
-
-  const filteredVideos = filterSectorId 
-    ? videos.filter(v => v.sector_id === filterSectorId)
-    : videos;
-
+export function VideoList({ videos, getSectorName, onEdit, onDelete }: VideoListProps) {
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-card-foreground">Vídeos Cadastrados ({filteredVideos.length})</h3>
-        <select
-          value={filterSectorId}
-          onChange={(e) => setFilterSectorId(e.target.value)}
-          className="h-9 px-3 rounded-lg border border-input bg-background text-foreground text-sm"
-        >
-          <option value="">Todos os setores</option>
-          {sectors.map((sector) => (
-            <option key={sector.id} value={sector.id}>{sector.name}</option>
-          ))}
-        </select>
-      </div>
+      <h3 className="font-semibold text-card-foreground">Vídeos Cadastrados ({videos.length})</h3>
 
-      {filteredVideos.length === 0 ? (
+      {videos.length === 0 ? (
         <p className="text-muted-foreground text-center py-8">Nenhum vídeo encontrado.</p>
       ) : (
         <div className="space-y-3">
-          {filteredVideos.map((video) => (
+          {videos.map((video) => (
             <div
               key={video.id}
               className="flex items-center gap-4 p-3 bg-muted rounded-lg group"

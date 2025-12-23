@@ -16,6 +16,7 @@ interface AdminPanelProps {
   sectors: Sector[];
   videos: Video[];
   videosCount: number;
+  selectedSectorId: string | null;
   onAddSector: (name: string) => Promise<{ error: any }>;
   onUpdateSector: (id: string, name: string) => Promise<{ error: any }>;
   onDeleteSector: (id: string) => Promise<{ error: any }>;
@@ -29,6 +30,7 @@ export function AdminPanel({
   sectors, 
   videos,
   videosCount, 
+  selectedSectorId,
   onAddSector, 
   onUpdateSector,
   onDeleteSector,
@@ -37,6 +39,10 @@ export function AdminPanel({
   onDeleteVideo,
   getSectorName 
 }: AdminPanelProps) {
+  // Filter videos based on selected sector
+  const filteredVideos = selectedSectorId 
+    ? videos.filter(v => v.sector_id === selectedSectorId)
+    : videos;
   const [showSectorModal, setShowSectorModal] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [showUserManagement, setShowUserManagement] = useState(false);
@@ -153,8 +159,7 @@ export function AdminPanel({
       {/* Videos List */}
       <div className="bg-card rounded-xl p-6 shadow-card">
         <VideoList
-          videos={videos}
-          sectors={sectors}
+          videos={filteredVideos}
           getSectorName={getSectorName}
           onEdit={setEditingVideo}
           onDelete={setDeletingVideo}
