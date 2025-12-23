@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { Video } from '@/types/academy';
 import { Button } from '@/components/ui/button';
-import { Pencil, Trash2, Play } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Pencil, Trash2, Play, Search, X } from 'lucide-react';
 
 interface VideoListProps {
   videos: Video[];
@@ -10,15 +12,47 @@ interface VideoListProps {
 }
 
 export function VideoList({ videos, getSectorName, onEdit, onDelete }: VideoListProps) {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredVideos = searchTerm.trim()
+    ? videos.filter(v => 
+        v.title.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : videos;
+
   return (
     <div className="space-y-4">
-      <h3 className="font-semibold text-card-foreground">Vídeos Cadastrados ({videos.length})</h3>
+      <div className="flex items-center justify-between gap-4">
+        <h3 className="font-semibold text-card-foreground">
+          Vídeos Cadastrados ({filteredVideos.length}{searchTerm && ` de ${videos.length}`})
+        </h3>
+        <div className="relative w-64">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Buscar vídeo..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9 pr-9 h-9"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      </div>
 
-      {videos.length === 0 ? (
-        <p className="text-muted-foreground text-center py-8">Nenhum vídeo encontrado.</p>
+      {filteredVideos.length === 0 ? (
+        <p className="text-muted-foreground text-center py-8">
+          {searchTerm ? 'Nenhum vídeo encontrado para esta busca.' : 'Nenhum vídeo encontrado.'}
+        </p>
       ) : (
         <div className="space-y-3">
-          {videos.map((video) => (
+          {filteredVideos.map((video) => (
             <div
               key={video.id}
               className="flex items-center gap-4 p-3 bg-muted rounded-lg group"
