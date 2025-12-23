@@ -156,6 +156,7 @@ const Index = () => {
               sectors={sectors}
               videos={allVideos}
               videosCount={allVideos.length}
+              selectedSectorId={selectedSectorId}
               onAddSector={addSector}
               onUpdateSector={updateSector}
               onDeleteSector={deleteSector}
