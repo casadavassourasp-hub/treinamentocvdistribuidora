@@ -26,11 +26,14 @@ export function VideoCard({ video, sectorName, watched = false, onWatch }: Video
           alt={video.title}
           className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${watched ? 'opacity-80' : ''}`}
         />
-        <div className="absolute inset-0 bg-primary/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-          <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center shadow-lg">
+        <button
+          onClick={() => onWatch(video)}
+          className="absolute inset-0 bg-primary/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center cursor-pointer"
+        >
+          <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
             <Play className="w-8 h-8 text-accent-foreground ml-1" />
           </div>
-        </div>
+        </button>
       </div>
       <div className="p-5">
         <span className="inline-block px-2.5 py-1 bg-primary/10 text-primary text-xs font-medium rounded-md mb-3">
