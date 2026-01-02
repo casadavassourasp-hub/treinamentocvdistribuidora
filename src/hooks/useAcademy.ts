@@ -36,7 +36,7 @@ export function useAcademy() {
       const { data, error } = await supabase
         .from('videos')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: true });
 
       if (error) throw error;
       setVideos(data || []);
@@ -120,7 +120,7 @@ export function useAcademy() {
 
       if (error) throw error;
       
-      setVideos((prev) => [data, ...prev]);
+      setVideos((prev) => [...prev, data]);
       toast({ title: 'Vídeo adicionado com sucesso!' });
       return { error: null };
     } catch (error: any) {
