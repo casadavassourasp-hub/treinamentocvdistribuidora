@@ -1,8 +1,11 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Video } from '@/types/academy';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Pencil, Trash2, Play, Search, X } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Pencil, Trash2, Play, Search, X, ArrowUpDown } from 'lucide-react';
+
+type SortOption = 'title-asc' | 'title-desc' | 'date-desc' | 'date-asc' | 'sector-asc' | 'sector-desc';
 
 interface VideoListProps {
   videos: Video[];
@@ -13,46 +16,86 @@ interface VideoListProps {
 
 export function VideoList({ videos, getSectorName, onEdit, onDelete }: VideoListProps) {
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState<SortOption>('date-desc');
 
-  const filteredVideos = searchTerm.trim()
-    ? videos.filter(v => 
-        v.title.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : videos;
+  const filteredAndSortedVideos = useMemo(() => {
+    let result = searchTerm.trim()
+      ? videos.filter(v => 
+          v.title.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      : [...videos];
+
+    result.sort((a, b) => {
+      switch (sortBy) {
+        case 'title-asc':
+          return a.title.localeCompare(b.title);
+        case 'title-desc':
+          return b.title.localeCompare(a.title);
+        case 'date-asc':
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        case 'date-desc':
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        case 'sector-asc':
+          return getSectorName(a.sector_id).localeCompare(getSectorName(b.sector_id));
+        case 'sector-desc':
+          return getSectorName(b.sector_id).localeCompare(getSectorName(a.sector_id));
+        default:
+          return 0;
+      }
+    });
+
+    return result;
+  }, [videos, searchTerm, sortBy, getSectorName]);
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-4 flex-wrap">
         <h3 className="font-semibold text-card-foreground">
-          Vídeos Cadastrados ({filteredVideos.length}{searchTerm && ` de ${videos.length}`})
+          Vídeos Cadastrados ({filteredAndSortedVideos.length}{searchTerm && ` de ${videos.length}`})
         </h3>
-        <div className="relative w-64">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="Buscar vídeo..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 pr-9 h-9"
-          />
-          {searchTerm && (
-            <button
-              onClick={() => setSearchTerm('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
+        <div className="flex items-center gap-2">
+          <div className="relative w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Buscar vídeo..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9 pr-9 h-9"
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+          <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
+            <SelectTrigger className="w-44 h-9">
+              <ArrowUpDown className="w-4 h-4 mr-2" />
+              <SelectValue placeholder="Ordenar por" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="date-desc">Mais recentes</SelectItem>
+              <SelectItem value="date-asc">Mais antigos</SelectItem>
+              <SelectItem value="title-asc">Título A-Z</SelectItem>
+              <SelectItem value="title-desc">Título Z-A</SelectItem>
+              <SelectItem value="sector-asc">Setor A-Z</SelectItem>
+              <SelectItem value="sector-desc">Setor Z-A</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
-      {filteredVideos.length === 0 ? (
+      {filteredAndSortedVideos.length === 0 ? (
         <p className="text-muted-foreground text-center py-8">
           {searchTerm ? 'Nenhum vídeo encontrado para esta busca.' : 'Nenhum vídeo encontrado.'}
         </p>
       ) : (
         <div className="space-y-3">
-          {filteredVideos.map((video) => (
+          {filteredAndSortedVideos.map((video) => (
             <div
               key={video.id}
               className="flex items-center gap-4 p-3 bg-muted rounded-lg group"
