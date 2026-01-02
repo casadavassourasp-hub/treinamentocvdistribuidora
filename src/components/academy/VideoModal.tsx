@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { X, CheckCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { X, CheckCircle, Loader2 } from 'lucide-react';
 import { Video } from '@/types/academy';
 
 interface VideoModalProps {
@@ -11,6 +11,14 @@ interface VideoModalProps {
 }
 
 export function VideoModal({ video, sectorName, watched = false, onClose, onMarkWatched }: VideoModalProps) {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (video) {
+      setIsLoading(true);
+    }
+  }, [video]);
+
   useEffect(() => {
     if (video && onMarkWatched) {
       // Mark as watched after 5 seconds of viewing
@@ -57,12 +65,21 @@ export function VideoModal({ video, sectorName, watched = false, onClose, onMark
             <X className="w-5 h-5 text-primary-foreground" />
           </button>
         </div>
-        <div className="aspect-video bg-foreground">
+        <div className="aspect-video bg-foreground relative">
+          {isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-foreground z-10">
+              <div className="flex flex-col items-center gap-3">
+                <Loader2 className="w-12 h-12 text-primary animate-spin" />
+                <span className="text-primary-foreground/70 text-sm">Carregando vídeo...</span>
+              </div>
+            </div>
+          )}
           <iframe
             src={`https://www.youtube.com/embed/${video.youtube_id}?autoplay=1`}
             className="w-full h-full"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
+            onLoad={() => setIsLoading(false)}
           />
         </div>
         <div className="p-5 bg-card">
