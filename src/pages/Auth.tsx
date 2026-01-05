@@ -6,7 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { GraduationCap, Mail, Lock, User } from 'lucide-react';
+import { Mail, Lock, User } from 'lucide-react';
+import logoCV from '@/assets/logo-cv-distribuidora.png';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -76,8 +77,8 @@ const Auth = () => {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md animate-fade-in">
         <CardHeader className="text-center space-y-4">
-          <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-            <GraduationCap className="w-8 h-8 text-primary" />
+          <div className="mx-auto">
+            <img src={logoCV} alt="CV Distribuidora" className="h-20 w-auto mx-auto" />
           </div>
           <div>
             <CardTitle className="text-2xl font-bold">Treinamento CV Distribuidora</CardTitle>
