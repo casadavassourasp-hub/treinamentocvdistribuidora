@@ -34,9 +34,9 @@ export function Sidebar({
 
   return (
     <aside className="w-64 bg-sidebar text-sidebar-foreground p-5 flex flex-col min-h-screen">
-      <div className="flex items-center gap-3 mb-8">
-        <img src={logoCV} alt="CV Distribuidora" className="h-10 w-auto" />
-        <h1 className="text-lg font-bold leading-tight">Treinamento CV Distribuidora</h1>
+      <div className="flex flex-col items-center gap-2 mb-8">
+        <img src={logoCV} alt="CV Distribuidora" className="h-12 w-auto" />
+        <h1 className="text-lg font-bold text-center leading-tight">Treinamento CV Distribuidora</h1>
       </div>
 
       <div className="space-y-2 mb-8">
