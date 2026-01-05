@@ -1,6 +1,7 @@
-import { GraduationCap, User, Settings, FolderOpen, LogOut, Check } from 'lucide-react';
+import { User, Settings, FolderOpen, LogOut, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sector, ViewMode, Video } from '@/types/academy';
+import logoCV from '@/assets/logo-cv-distribuidora.png';
 
 interface SidebarProps {
   sectors: Sector[];
@@ -34,10 +35,7 @@ export function Sidebar({
   return (
     <aside className="w-64 bg-sidebar text-sidebar-foreground p-5 flex flex-col min-h-screen">
       <div className="flex items-center gap-3 mb-8">
-        <div className="w-10 h-10 bg-accent rounded-lg flex items-center justify-center">
-          <GraduationCap className="w-6 h-6 text-accent-foreground" />
-        </div>
-        <h1 className="text-xl font-bold">Treinamento CV Distribuidora</h1>
+        <img src={logoCV} alt="CV Distribuidora" className="h-12 w-auto" />
       </div>
 
       <div className="space-y-2 mb-8">
