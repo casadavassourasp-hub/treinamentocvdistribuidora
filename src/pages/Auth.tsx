@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Mail, Lock, User } from 'lucide-react';
-import logoCV from '@/assets/logo-cv-distribuidora.png';
+import logoCV from '@/assets/logo-cv-login.png';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -78,10 +78,9 @@ const Auth = () => {
       <Card className="w-full max-w-md animate-fade-in">
         <CardHeader className="text-center space-y-4">
           <div className="mx-auto">
-            <img src={logoCV} alt="CV Distribuidora" className="h-20 w-auto mx-auto" />
+            <img src={logoCV} alt="CV Distribuidora" className="h-28 w-auto mx-auto" />
           </div>
           <div>
-            <CardTitle className="text-2xl font-bold">Treinamento CV Distribuidora</CardTitle>
             <CardDescription className="mt-2">
               {isLogin ? 'Faça login para acessar seus treinamentos' : 'Crie sua conta para começar'}
             </CardDescription>
