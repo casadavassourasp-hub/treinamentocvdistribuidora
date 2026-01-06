@@ -45,7 +45,7 @@ export function Sidebar({
           onClick={() => onViewModeChange('employee')} 
           className="h-11"
         >
-          <User className="w-5 h-5 mr-2" />
+          <User className="w-5 h-5 mr-2 transition-transform duration-200 group-hover:scale-110" />
           Funcionário
         </Button>
         {isAdmin && (
@@ -54,7 +54,7 @@ export function Sidebar({
             onClick={() => onViewModeChange('admin')} 
             className="h-11"
           >
-            <Settings className="w-5 h-5 mr-2" />
+            <Settings className="w-5 h-5 mr-2 transition-transform duration-200 group-hover:scale-110" />
             Administrador
           </Button>
         )}
@@ -70,14 +70,14 @@ export function Sidebar({
         <div className="space-y-1">
           <button 
             onClick={() => onSectorSelect(null)} 
-            className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all ${
+            className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all duration-200 group ${
               selectedSectorId === null 
                 ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-sm' 
-                : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/50'
+                : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:translate-x-1 hover:text-sidebar-foreground hover:shadow-sm'
             }`}
           >
             <span className="flex items-center gap-2">
-              {selectedSectorId === null && <Check className="w-4 h-4 text-primary" />}
+              {selectedSectorId === null && <Check className="w-4 h-4 text-primary transition-transform duration-200 group-hover:scale-110" />}
               Todos os setores
             </span>
             <span className={`text-xs px-2 py-0.5 rounded-full ${
@@ -92,14 +92,14 @@ export function Sidebar({
             <button 
               key={sector.id} 
               onClick={() => onSectorSelect(sector.id)} 
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all ${
+              className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all duration-200 group ${
                 selectedSectorId === sector.id 
                   ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-sm' 
-                  : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/50'
+                  : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:translate-x-1 hover:text-sidebar-foreground hover:shadow-sm'
               }`}
             >
               <span className="flex items-center gap-2 truncate">
-                {selectedSectorId === sector.id && <Check className="w-4 h-4 text-primary flex-shrink-0" />}
+                {selectedSectorId === sector.id && <Check className="w-4 h-4 text-primary flex-shrink-0 transition-transform duration-200 group-hover:scale-110" />}
                 <span className="truncate">{sector.name}</span>
               </span>
               <span className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${
@@ -120,8 +120,8 @@ export function Sidebar({
             {userName}
           </p>
         )}
-        <Button variant="sidebar" onClick={onLogout} className="h-10 text-sm">
-          <LogOut className="w-4 h-4 mr-2" />
+        <Button variant="sidebar" onClick={onLogout} className="h-10 text-sm hover:bg-destructive/10 hover:text-destructive">
+          <LogOut className="w-4 h-4 mr-2 transition-transform duration-200 group-hover:scale-110" />
           Sair
         </Button>
       </div>
