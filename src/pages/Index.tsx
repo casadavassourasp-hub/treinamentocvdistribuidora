@@ -7,6 +7,7 @@ import { AdminPanel } from '@/components/academy/AdminPanel';
 import { Leaderboard } from '@/components/academy/Leaderboard';
 import { AchievementBadges } from '@/components/academy/AchievementBadges';
 import { UserStatsCard } from '@/components/academy/UserStatsCard';
+import { SectorFilter } from '@/components/academy/SectorFilter';
 import { useAcademy } from '@/hooks/useAcademy';
 import { useAuth } from '@/hooks/useAuth';
 import { useVideoProgress } from '@/hooks/useVideoProgress';
@@ -121,6 +122,14 @@ const Index = () => {
                 achievements={achievements} 
                 unlockedIds={unlockedAchievementIds}
                 loading={gamificationLoading}
+              />
+
+              {/* Sector Filter */}
+              <SectorFilter
+                sectors={sectors}
+                videos={allVideos}
+                selectedSectorId={selectedSectorId}
+                onSectorSelect={setSelectedSectorId}
               />
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

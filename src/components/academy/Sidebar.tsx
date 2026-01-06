@@ -1,4 +1,4 @@
-import { User, Settings, FolderOpen, LogOut, Check } from 'lucide-react';
+import { User, Settings, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sector, ViewMode, Video } from '@/types/academy';
 import logoCV from '@/assets/logo-cv-distribuidora.png';
@@ -26,7 +26,7 @@ export function Sidebar({
   onSectorSelect,
   onLogout
 }: SidebarProps) {
-  // Count videos per sector
+  // Count videos per sector - only used in admin mode
   const getVideoCount = (sectorId: string | null) => {
     if (sectorId === null) return videos.length;
     return videos.filter(v => v.sector_id === sectorId).length;
@@ -60,59 +60,59 @@ export function Sidebar({
         )}
       </div>
 
-      <div className="flex-1">
-        <div className="flex items-center gap-2 mb-3">
-          <FolderOpen className="w-4 h-4 text-sidebar-muted" />
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-sidebar-muted">
-            Setores
-          </h3>
-        </div>
-        <div className="space-y-1">
-          <button 
-            onClick={() => onSectorSelect(null)} 
-            className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all duration-200 group ${
-              selectedSectorId === null 
-                ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-sm' 
-                : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:translate-x-1 hover:text-sidebar-foreground hover:shadow-sm'
-            }`}
-          >
-            <span className="flex items-center gap-2">
-              {selectedSectorId === null && <Check className="w-4 h-4 text-primary transition-transform duration-200 group-hover:scale-110" />}
-              Todos os setores
-            </span>
-            <span className={`text-xs px-2 py-0.5 rounded-full ${
-              selectedSectorId === null 
-                ? 'bg-primary/20 text-primary' 
-                : 'bg-sidebar-accent/50 text-sidebar-muted'
-            }`}>
-              {getVideoCount(null)}
-            </span>
-          </button>
-          {sectors.map(sector => (
+      {/* Sector filter only shown for admin mode */}
+      {viewMode === 'admin' && (
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-3">
+            <Settings className="w-4 h-4 text-sidebar-muted" />
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-sidebar-muted">
+              Setores
+            </h3>
+          </div>
+          <div className="space-y-1">
             <button 
-              key={sector.id} 
-              onClick={() => onSectorSelect(sector.id)} 
+              onClick={() => onSectorSelect(null)} 
               className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all duration-200 group ${
-                selectedSectorId === sector.id 
+                selectedSectorId === null 
                   ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-sm' 
                   : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:translate-x-1 hover:text-sidebar-foreground hover:shadow-sm'
               }`}
             >
-              <span className="flex items-center gap-2 truncate">
-                {selectedSectorId === sector.id && <Check className="w-4 h-4 text-primary flex-shrink-0 transition-transform duration-200 group-hover:scale-110" />}
-                <span className="truncate">{sector.name}</span>
-              </span>
-              <span className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${
-                selectedSectorId === sector.id 
+              <span>Todos os setores</span>
+              <span className={`text-xs px-2 py-0.5 rounded-full ${
+                selectedSectorId === null 
                   ? 'bg-primary/20 text-primary' 
                   : 'bg-sidebar-accent/50 text-sidebar-muted'
               }`}>
-                {getVideoCount(sector.id)}
+                {getVideoCount(null)}
               </span>
             </button>
-          ))}
+            {sectors.map(sector => (
+              <button 
+                key={sector.id} 
+                onClick={() => onSectorSelect(sector.id)} 
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all duration-200 group ${
+                  selectedSectorId === sector.id 
+                    ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-sm' 
+                    : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:translate-x-1 hover:text-sidebar-foreground hover:shadow-sm'
+                }`}
+              >
+                <span className="truncate">{sector.name}</span>
+                <span className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${
+                  selectedSectorId === sector.id 
+                    ? 'bg-primary/20 text-primary' 
+                    : 'bg-sidebar-accent/50 text-sidebar-muted'
+                }`}>
+                  {getVideoCount(sector.id)}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Spacer for employee mode */}
+      {viewMode === 'employee' && <div className="flex-1" />}
 
       <div className="pt-4 border-t border-sidebar-border mt-4 space-y-3">
         {userName && (
