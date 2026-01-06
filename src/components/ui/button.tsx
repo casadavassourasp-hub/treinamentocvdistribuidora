@@ -16,8 +16,8 @@ const buttonVariants = cva(
         ghost: "hover:bg-muted hover:text-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         accent: "bg-accent text-accent-foreground shadow-sm hover:bg-accent/90 active:scale-[0.98]",
-        sidebar: "w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent rounded-lg transition-colors",
-        "sidebar-active": "w-full justify-start bg-sidebar-primary text-sidebar-primary-foreground rounded-lg",
+        sidebar: "w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:translate-x-1 hover:text-sidebar-accent-foreground rounded-lg transition-all duration-200 group",
+        "sidebar-active": "w-full justify-start bg-sidebar-primary text-sidebar-primary-foreground rounded-lg shadow-md group",
       },
       size: {
         default: "h-10 px-4 py-2",
