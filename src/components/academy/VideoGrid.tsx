@@ -1,9 +1,12 @@
-import { Video } from '@/types/academy';
+import { Video, Sector } from '@/types/academy';
 import { VideoCard } from './VideoCard';
+import { VideoAccordion } from './VideoAccordion';
 import { BookOpen, TrendingUp } from 'lucide-react';
 
 interface VideoGridProps {
   videos: Video[];
+  sectors: Sector[];
+  selectedSectorId: string | null;
   getSectorName: (sectorId: string | null) => string;
   onWatch: (video: Video) => void;
   isWatched?: (videoId: string) => boolean;
@@ -13,6 +16,8 @@ interface VideoGridProps {
 
 export function VideoGrid({ 
   videos, 
+  sectors,
+  selectedSectorId,
   getSectorName, 
   onWatch, 
   isWatched,
@@ -49,20 +54,32 @@ export function VideoGrid({
         </div>
       )}
 
-      {/* Videos Grid */}
+      {/* Videos Display */}
       {videos.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {videos.map((video, index) => (
-            <div key={video.id} style={{ animationDelay: `${index * 50}ms` }}>
-              <VideoCard
-                video={video}
-                sectorName={getSectorName(video.sector_id)}
-                watched={isWatched?.(video.id) ?? false}
-                onWatch={onWatch}
-              />
-            </div>
-          ))}
-        </div>
+        selectedSectorId === null ? (
+          // Accordion view when "Todos os setores" is selected
+          <VideoAccordion
+            videos={videos}
+            sectors={sectors}
+            getSectorName={getSectorName}
+            onWatch={onWatch}
+            isWatched={isWatched}
+          />
+        ) : (
+          // Grid view when a specific sector is selected
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {videos.map((video, index) => (
+              <div key={video.id} style={{ animationDelay: `${index * 50}ms` }}>
+                <VideoCard
+                  video={video}
+                  sectorName={getSectorName(video.sector_id)}
+                  watched={isWatched?.(video.id) ?? false}
+                  onWatch={onWatch}
+                />
+              </div>
+            ))}
+          </div>
+        )
       ) : (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-4">

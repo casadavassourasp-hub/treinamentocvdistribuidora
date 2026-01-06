@@ -128,6 +128,8 @@ const Index = () => {
                 <div className="lg:col-span-2">
                   <VideoGrid
                     videos={videos}
+                    sectors={sectors}
+                    selectedSectorId={selectedSectorId}
                     getSectorName={getSectorName}
                     onWatch={setWatchingVideo}
                     isWatched={isWatched}
