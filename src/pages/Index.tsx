@@ -51,6 +51,7 @@ const Index = () => {
   } = useGamification();
 
   const [watchingVideo, setWatchingVideo] = useState<Video | null>(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -96,6 +97,8 @@ const Index = () => {
         selectedSectorId={selectedSectorId}
         isAdmin={isAdmin}
         userName={user.email || undefined}
+        collapsed={sidebarCollapsed}
+        onCollapsedChange={setSidebarCollapsed}
         onViewModeChange={setViewMode}
         onSectorSelect={setSelectedSectorId}
         onLogout={handleLogout}
