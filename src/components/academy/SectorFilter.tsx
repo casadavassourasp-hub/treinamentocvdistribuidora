@@ -27,24 +27,6 @@ export function SectorFilter({
       </div>
       
       <div className="flex flex-wrap gap-2">
-        <button 
-          onClick={() => onSectorSelect(null)} 
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-all duration-200 ${
-            selectedSectorId === null 
-              ? 'bg-primary text-primary-foreground font-medium shadow-md' 
-              : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
-          }`}
-        >
-          {selectedSectorId === null && <Check className="w-4 h-4" />}
-          <span>Todos</span>
-          <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-            selectedSectorId === null 
-              ? 'bg-primary-foreground/20 text-primary-foreground' 
-              : 'bg-background text-muted-foreground'
-          }`}>
-            {getVideoCount(null)}
-          </span>
-        </button>
         
         {sectors.map(sector => (
           <button 
