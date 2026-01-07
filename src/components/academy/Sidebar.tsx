@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { User, Settings, LogOut, FolderOpen, ChevronDown, ChevronRight, Users } from 'lucide-react';
+import { User, Settings, LogOut, FolderOpen, ChevronDown, ChevronRight, Users, PanelLeftClose, PanelLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sector, ViewMode, Video } from '@/types/academy';
 import { Employee } from '@/hooks/useAcademy';
@@ -13,6 +13,8 @@ interface SidebarProps {
   selectedSectorId: string | null;
   isAdmin: boolean;
   userName?: string;
+  collapsed: boolean;
+  onCollapsedChange: (collapsed: boolean) => void;
   onViewModeChange: (mode: ViewMode) => void;
   onSectorSelect: (sectorId: string | null) => void;
   onLogout: () => void;
@@ -26,6 +28,8 @@ export function Sidebar({
   selectedSectorId,
   isAdmin,
   userName,
+  collapsed,
+  onCollapsedChange,
   onViewModeChange,
   onSectorSelect,
   onLogout
@@ -42,57 +46,83 @@ export function Sidebar({
   const employeeList = employees.filter(e => e.role === 'employee');
 
   return (
-    <aside className="w-64 bg-sidebar text-sidebar-foreground p-5 flex flex-col min-h-screen">
-      <div className="flex flex-col items-center gap-2 mb-8">
-        <img src={logoCV} alt="CV Distribuidora" className="h-12 w-auto" />
-        <h1 className="text-lg font-bold text-center leading-tight">Treinamento CV Distribuidora</h1>
-      </div>
-
-      <div className="space-y-2 mb-8">
-        <Button 
-          variant={viewMode === 'employee' ? 'sidebar-active' : 'sidebar'} 
-          onClick={() => onViewModeChange('employee')} 
-          className="h-11"
+    <>
+      {/* Toggle button when collapsed */}
+      {collapsed && (
+        <button
+          onClick={() => onCollapsedChange(false)}
+          className="fixed left-0 top-4 z-50 bg-sidebar text-sidebar-foreground p-2 rounded-r-lg shadow-lg hover:bg-sidebar-accent/50 transition-all duration-200"
         >
-          <User className="w-5 h-5 mr-2 transition-transform duration-200 group-hover:scale-110" />
-          Funcionário
-        </Button>
-        {isAdmin && (
+          <PanelLeft className="w-5 h-5" />
+        </button>
+      )}
+
+      {/* Sidebar */}
+      <aside 
+        className={`bg-sidebar text-sidebar-foreground p-5 flex flex-col min-h-screen transition-all duration-300 ease-in-out ${
+          collapsed ? 'w-0 p-0 overflow-hidden opacity-0' : 'w-64 opacity-100'
+        }`}
+      >
+        {/* Collapse button */}
+        <button
+          onClick={() => onCollapsedChange(true)}
+          className="absolute right-2 top-2 p-1.5 rounded-lg text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-all duration-200"
+          title="Fechar menu"
+        >
+          <PanelLeftClose className="w-4 h-4" />
+        </button>
+
+        <div className="flex flex-col items-center gap-2 mb-8 mt-4">
+          <img src={logoCV} alt="CV Distribuidora" className="h-12 w-auto" />
+          <h1 className="text-lg font-bold text-center leading-tight">Treinamento CV Distribuidora</h1>
+        </div>
+
+        <div className="space-y-2 mb-8">
           <Button 
-            variant={viewMode === 'admin' ? 'sidebar-active' : 'sidebar'} 
-            onClick={() => onViewModeChange('admin')} 
+            variant={viewMode === 'employee' ? 'sidebar-active' : 'sidebar'} 
+            onClick={() => onViewModeChange('employee')} 
             className="h-11"
           >
-            <Settings className="w-5 h-5 mr-2 transition-transform duration-200 group-hover:scale-110" />
-            Administrador
+            <User className="w-5 h-5 mr-2 transition-transform duration-200 group-hover:scale-110" />
+            Funcionário
           </Button>
-        )}
-      </div>
-
-      {/* Admin folders - only shown for admin mode */}
-      {viewMode === 'admin' && (
-        <div className="flex-1 space-y-2">
-          {/* Collapsible Sectors Folder */}
-          <div>
-            <button
-              onClick={() => setSectorsOpen(!sectorsOpen)}
-              className="w-full flex items-center gap-2 px-2 py-2 rounded-lg text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent/50 transition-all duration-200"
+          {isAdmin && (
+            <Button 
+              variant={viewMode === 'admin' ? 'sidebar-active' : 'sidebar'} 
+              onClick={() => onViewModeChange('admin')} 
+              className="h-11"
             >
-              {sectorsOpen ? (
-                <ChevronDown className="w-4 h-4 text-sidebar-muted" />
-              ) : (
-                <ChevronRight className="w-4 h-4 text-sidebar-muted" />
-              )}
-              <FolderOpen className="w-4 h-4 text-sidebar-muted" />
-              <span>Setores</span>
-              <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-sidebar-accent/50 text-sidebar-muted">
-                {sectors.length}
-              </span>
-            </button>
-            
-            {/* Sectors List */}
-            {sectorsOpen && (
-              <div className="ml-4 mt-1 space-y-1 border-l border-sidebar-border pl-2">
+              <Settings className="w-5 h-5 mr-2 transition-transform duration-200 group-hover:scale-110" />
+              Administrador
+            </Button>
+          )}
+        </div>
+
+        {/* Admin folders - only shown for admin mode */}
+        {viewMode === 'admin' && (
+          <div className="flex-1 space-y-2">
+            {/* Collapsible Sectors Folder */}
+            <div>
+              <button
+                onClick={() => setSectorsOpen(!sectorsOpen)}
+                className="w-full flex items-center gap-2 px-2 py-2 rounded-lg text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent/50 transition-all duration-200"
+              >
+                {sectorsOpen ? (
+                  <ChevronDown className="w-4 h-4 text-sidebar-muted" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-sidebar-muted" />
+                )}
+                <FolderOpen className="w-4 h-4 text-sidebar-muted" />
+                <span>Setores</span>
+                <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-sidebar-accent/50 text-sidebar-muted">
+                  {sectors.length}
+                </span>
+              </button>
+              
+              {/* Sectors List */}
+              <div className={`ml-4 mt-1 space-y-1 border-l border-sidebar-border pl-2 overflow-hidden transition-all duration-200 ${
+                sectorsOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+              }`}>
                 {sectors.map(sector => (
                   <button 
                     key={sector.id} 
@@ -114,30 +144,30 @@ export function Sidebar({
                   </button>
                 ))}
               </div>
-            )}
-          </div>
+            </div>
 
-          {/* Collapsible Employees Folder */}
-          <div>
-            <button
-              onClick={() => setEmployeesOpen(!employeesOpen)}
-              className="w-full flex items-center gap-2 px-2 py-2 rounded-lg text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent/50 transition-all duration-200"
-            >
-              {employeesOpen ? (
-                <ChevronDown className="w-4 h-4 text-sidebar-muted" />
-              ) : (
-                <ChevronRight className="w-4 h-4 text-sidebar-muted" />
-              )}
-              <Users className="w-4 h-4 text-sidebar-muted" />
-              <span>Funcionários</span>
-              <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-sidebar-accent/50 text-sidebar-muted">
-                {employeeList.length}
-              </span>
-            </button>
-            
-            {/* Employees List */}
-            {employeesOpen && (
-              <div className="ml-4 mt-1 space-y-1 border-l border-sidebar-border pl-2 max-h-48 overflow-y-auto">
+            {/* Collapsible Employees Folder */}
+            <div>
+              <button
+                onClick={() => setEmployeesOpen(!employeesOpen)}
+                className="w-full flex items-center gap-2 px-2 py-2 rounded-lg text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent/50 transition-all duration-200"
+              >
+                {employeesOpen ? (
+                  <ChevronDown className="w-4 h-4 text-sidebar-muted" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-sidebar-muted" />
+                )}
+                <Users className="w-4 h-4 text-sidebar-muted" />
+                <span>Funcionários</span>
+                <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-sidebar-accent/50 text-sidebar-muted">
+                  {employeeList.length}
+                </span>
+              </button>
+              
+              {/* Employees List */}
+              <div className={`ml-4 mt-1 space-y-1 border-l border-sidebar-border pl-2 overflow-hidden transition-all duration-200 ${
+                employeesOpen ? 'max-h-48 opacity-100 overflow-y-auto' : 'max-h-0 opacity-0'
+              }`}>
                 {employeeList.length === 0 ? (
                   <p className="text-xs text-sidebar-muted px-3 py-2">Nenhum funcionário cadastrado</p>
                 ) : (
@@ -154,25 +184,25 @@ export function Sidebar({
                   ))
                 )}
               </div>
-            )}
+            </div>
           </div>
-        </div>
-      )}
-
-      {/* Spacer for employee mode */}
-      {viewMode === 'employee' && <div className="flex-1" />}
-
-      <div className="pt-4 border-t border-sidebar-border mt-4 space-y-3">
-        {userName && (
-          <p className="text-xs text-sidebar-muted text-center truncate">
-            {userName}
-          </p>
         )}
-        <Button variant="sidebar" onClick={onLogout} className="h-10 text-sm hover:bg-destructive/10 hover:text-destructive">
-          <LogOut className="w-4 h-4 mr-2 transition-transform duration-200 group-hover:scale-110" />
-          Sair
-        </Button>
-      </div>
-    </aside>
+
+        {/* Spacer for employee mode */}
+        {viewMode === 'employee' && <div className="flex-1" />}
+
+        <div className="pt-4 border-t border-sidebar-border mt-4 space-y-3">
+          {userName && (
+            <p className="text-xs text-sidebar-muted text-center truncate">
+              {userName}
+            </p>
+          )}
+          <Button variant="sidebar" onClick={onLogout} className="h-10 text-sm hover:bg-destructive/10 hover:text-destructive">
+            <LogOut className="w-4 h-4 mr-2 transition-transform duration-200 group-hover:scale-110" />
+            Sair
+          </Button>
+        </div>
+      </aside>
+    </>
   );
 }
