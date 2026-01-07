@@ -22,6 +22,7 @@ const Index = () => {
     sectors,
     videos,
     allVideos,
+    employees,
     viewMode,
     selectedSectorId,
     loading: dataLoading,
@@ -90,6 +91,7 @@ const Index = () => {
       <Sidebar
         sectors={sectors}
         videos={allVideos}
+        employees={employees}
         viewMode={viewMode}
         selectedSectorId={selectedSectorId}
         isAdmin={isAdmin}
