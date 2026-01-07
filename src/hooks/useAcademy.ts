@@ -3,9 +3,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { Sector, Video, ViewMode } from '@/types/academy';
 import { useToast } from '@/hooks/use-toast';
 
+export interface Employee {
+  id: string;
+  email: string | null;
+  full_name: string | null;
+  role: 'admin' | 'employee';
+}
+
 export function useAcademy() {
   const [sectors, setSectors] = useState<Sector[]>([]);
   const [videos, setVideos] = useState<Video[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('employee');
   const [selectedSectorId, setSelectedSectorId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -14,7 +22,39 @@ export function useAcademy() {
   useEffect(() => {
     fetchSectors();
     fetchVideos();
+    fetchEmployees();
   }, []);
+
+  const fetchEmployees = async () => {
+    try {
+      // Fetch profiles with their roles
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, email, full_name')
+        .order('full_name');
+
+      if (profilesError) throw profilesError;
+
+      const { data: roles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, role');
+
+      if (rolesError) throw rolesError;
+
+      const rolesMap = new Map(roles?.map(r => [r.user_id, r.role]) || []);
+
+      const employeesWithRoles: Employee[] = (profiles || []).map(p => ({
+        id: p.id,
+        email: p.email,
+        full_name: p.full_name,
+        role: (rolesMap.get(p.id) as 'admin' | 'employee') || 'employee'
+      }));
+
+      setEmployees(employeesWithRoles);
+    } catch (error: any) {
+      console.error('Error fetching employees:', error);
+    }
+  };
 
   const fetchSectors = async () => {
     try {
@@ -181,6 +221,7 @@ export function useAcademy() {
     sectors,
     videos: filteredVideos,
     allVideos: videos,
+    employees,
     viewMode,
     selectedSectorId,
     loading,
@@ -195,5 +236,6 @@ export function useAcademy() {
     getSectorName,
     refetchSectors: fetchSectors,
     refetchVideos: fetchVideos,
+    refetchEmployees: fetchEmployees,
   };
 }
