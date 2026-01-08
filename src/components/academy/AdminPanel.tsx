@@ -156,16 +156,6 @@ export function AdminPanel({
         </div>
       </div>
 
-      {/* Videos List */}
-      <div className="bg-card rounded-xl p-6 shadow-card">
-        <VideoList
-          videos={filteredVideos}
-          getSectorName={getSectorName}
-          onEdit={setEditingVideo}
-          onDelete={setDeletingVideo}
-        />
-      </div>
-
       {/* Sectors List */}
       <div className="bg-card rounded-xl p-6 shadow-card">
         <h3 className="font-semibold text-card-foreground mb-4">Setores Cadastrados</h3>
@@ -200,6 +190,16 @@ export function AdminPanel({
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Videos List */}
+      <div className="bg-card rounded-xl p-6 shadow-card">
+        <VideoList
+          videos={filteredVideos}
+          getSectorName={getSectorName}
+          onEdit={setEditingVideo}
+          onDelete={setDeletingVideo}
+        />
       </div>
 
       {/* Modals */}
