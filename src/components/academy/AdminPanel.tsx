@@ -9,7 +9,7 @@ import { UserManagement } from './UserManagement';
 import { VideoList } from './VideoList';
 import { EmployeeProgressReport } from './EmployeeProgressReport';
 import { Sector, Video } from '@/types/academy';
-import { Plus, Video as VideoIcon, FolderPlus, Users, Pencil, Trash2, BarChart3 } from 'lucide-react';
+import { Plus, Video as VideoIcon, FolderPlus, Users, Pencil, Trash2, BarChart3, ChevronDown, ChevronRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface AdminPanelProps {
@@ -55,6 +55,7 @@ export function AdminPanel({
   const [deletingVideo, setDeletingVideo] = useState<Video | null>(null);
   const [deletingSector, setDeletingSector] = useState<Sector | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [videosListOpen, setVideosListOpen] = useState(false);
 
   useEffect(() => {
     fetchUsersCount();
@@ -192,14 +193,36 @@ export function AdminPanel({
         </div>
       </div>
 
-      {/* Videos List */}
-      <div className="bg-card rounded-xl p-6 shadow-card">
-        <VideoList
-          videos={filteredVideos}
-          getSectorName={getSectorName}
-          onEdit={setEditingVideo}
-          onDelete={setDeletingVideo}
-        />
+      {/* Videos List - Collapsible */}
+      <div className="bg-card rounded-xl shadow-card overflow-hidden">
+        <button
+          onClick={() => setVideosListOpen(!videosListOpen)}
+          className="w-full flex items-center gap-3 p-6 text-left hover:bg-muted/50 transition-colors"
+        >
+          {videosListOpen ? (
+            <ChevronDown className="w-5 h-5 text-muted-foreground" />
+          ) : (
+            <ChevronRight className="w-5 h-5 text-muted-foreground" />
+          )}
+          <VideoIcon className="w-5 h-5 text-primary" />
+          <span className="font-semibold text-card-foreground">Vídeos Cadastrados</span>
+          <span className="ml-auto text-sm px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+            {filteredVideos.length}
+          </span>
+        </button>
+        
+        <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+          videosListOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
+        }`}>
+          <div className="px-6 pb-6">
+            <VideoList
+              videos={filteredVideos}
+              getSectorName={getSectorName}
+              onEdit={setEditingVideo}
+              onDelete={setDeletingVideo}
+            />
+          </div>
+        </div>
       </div>
 
       {/* Modals */}
