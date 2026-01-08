@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { User, Settings, LogOut, FolderOpen, ChevronDown, ChevronRight, Users, PanelLeftClose, PanelLeft } from 'lucide-react';
+import { User, Settings, LogOut, FolderOpen, ChevronDown, ChevronRight, Users, PanelLeftClose, PanelLeft, PlayCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sector, ViewMode, Video } from '@/types/academy';
 import { Employee } from '@/hooks/useAcademy';
@@ -36,10 +36,25 @@ export function Sidebar({
 }: SidebarProps) {
   const [sectorsOpen, setSectorsOpen] = useState(true);
   const [employeesOpen, setEmployeesOpen] = useState(false);
+  const [openSectorIds, setOpenSectorIds] = useState<Set<string>>(new Set());
 
-  // Count videos per sector - only used in admin mode
-  const getVideoCount = (sectorId: string) => {
-    return videos.filter(v => v.sector_id === sectorId).length;
+  // Get videos for a specific sector
+  const getVideosForSector = (sectorId: string) => {
+    return videos.filter(v => v.sector_id === sectorId);
+  };
+
+  // Toggle a sector's video list
+  const toggleSectorVideos = (sectorId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setOpenSectorIds(prev => {
+      const next = new Set(prev);
+      if (next.has(sectorId)) {
+        next.delete(sectorId);
+      } else {
+        next.add(sectorId);
+      }
+      return next;
+    });
   };
 
   // Filter only employees (not admins)
@@ -121,28 +136,58 @@ export function Sidebar({
               
               {/* Sectors List */}
               <div className={`ml-4 mt-1 space-y-1 border-l border-sidebar-border pl-2 overflow-hidden transition-all duration-200 ${
-                sectorsOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                sectorsOpen ? 'max-h-[500px] opacity-100 overflow-y-auto' : 'max-h-0 opacity-0'
               }`}>
-                {sectors.map(sector => (
-                  <button 
-                    key={sector.id} 
-                    onClick={() => onSectorSelect(sector.id)} 
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all duration-200 group ${
-                      selectedSectorId === sector.id 
-                        ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-sm' 
-                        : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:translate-x-1 hover:text-sidebar-foreground hover:shadow-sm'
-                    }`}
-                  >
-                    <span className="truncate">{sector.name}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${
-                      selectedSectorId === sector.id 
-                        ? 'bg-primary/20 text-primary' 
-                        : 'bg-sidebar-accent/50 text-sidebar-muted'
-                    }`}>
-                      {getVideoCount(sector.id)}
-                    </span>
-                  </button>
-                ))}
+                {sectors.map(sector => {
+                  const sectorVideos = getVideosForSector(sector.id);
+                  const isSectorOpen = openSectorIds.has(sector.id);
+                  
+                  return (
+                    <div key={sector.id}>
+                      <button 
+                        onClick={(e) => toggleSectorVideos(sector.id, e)} 
+                        className={`w-full flex items-center gap-1 px-2 py-2 rounded-lg text-sm transition-all duration-200 group ${
+                          selectedSectorId === sector.id 
+                            ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-sm' 
+                            : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
+                        }`}
+                      >
+                        {isSectorOpen ? (
+                          <ChevronDown className="w-3 h-3 text-sidebar-muted flex-shrink-0" />
+                        ) : (
+                          <ChevronRight className="w-3 h-3 text-sidebar-muted flex-shrink-0" />
+                        )}
+                        <span className="truncate flex-1 text-left">{sector.name}</span>
+                        <span className={`text-xs px-1.5 py-0.5 rounded-full flex-shrink-0 ${
+                          selectedSectorId === sector.id 
+                            ? 'bg-primary/20 text-primary' 
+                            : 'bg-sidebar-accent/50 text-sidebar-muted'
+                        }`}>
+                          {sectorVideos.length}
+                        </span>
+                      </button>
+                      
+                      {/* Videos inside sector */}
+                      <div className={`ml-4 mt-1 space-y-0.5 border-l border-sidebar-border/50 pl-2 overflow-hidden transition-all duration-200 ${
+                        isSectorOpen ? 'max-h-[300px] opacity-100 overflow-y-auto' : 'max-h-0 opacity-0'
+                      }`}>
+                        {sectorVideos.length === 0 ? (
+                          <p className="text-xs text-sidebar-muted px-2 py-1">Nenhum vídeo</p>
+                        ) : (
+                          sectorVideos.map(video => (
+                            <div 
+                              key={video.id} 
+                              className="flex items-center gap-2 px-2 py-1.5 rounded text-xs text-sidebar-foreground/70"
+                            >
+                              <PlayCircle className="w-3 h-3 text-sidebar-muted flex-shrink-0" />
+                              <span className="truncate">{video.title}</span>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
