@@ -8,7 +8,8 @@ import { Leaderboard } from '@/components/academy/Leaderboard';
 import { AchievementBadges } from '@/components/academy/AchievementBadges';
 import { UserStatsCard } from '@/components/academy/UserStatsCard';
 import { SectorFilter } from '@/components/academy/SectorFilter';
-import { useAcademy } from '@/hooks/useAcademy';
+import { EmployeeDetail } from '@/components/academy/EmployeeDetail';
+import { useAcademy, Employee } from '@/hooks/useAcademy';
 import { useAuth } from '@/hooks/useAuth';
 import { useVideoProgress } from '@/hooks/useVideoProgress';
 import { useGamification } from '@/hooks/useGamification';
@@ -52,6 +53,7 @@ const Index = () => {
 
   const [watchingVideo, setWatchingVideo] = useState<Video | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -99,8 +101,12 @@ const Index = () => {
         userName={user.email || undefined}
         collapsed={sidebarCollapsed}
         onCollapsedChange={setSidebarCollapsed}
-        onViewModeChange={setViewMode}
+        onViewModeChange={(mode) => {
+          setViewMode(mode);
+          setSelectedEmployee(null);
+        }}
         onSectorSelect={setSelectedSectorId}
+        onEmployeeSelect={setSelectedEmployee}
         onLogout={handleLogout}
       />
 
@@ -168,6 +174,11 @@ const Index = () => {
                 </div>
               </div>
             </div>
+          ) : selectedEmployee ? (
+            <EmployeeDetail
+              employee={selectedEmployee}
+              onBack={() => setSelectedEmployee(null)}
+            />
           ) : (
             <AdminPanel
               sectors={sectors}

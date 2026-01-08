@@ -17,6 +17,7 @@ interface SidebarProps {
   onCollapsedChange: (collapsed: boolean) => void;
   onViewModeChange: (mode: ViewMode) => void;
   onSectorSelect: (sectorId: string | null) => void;
+  onEmployeeSelect?: (employee: Employee) => void;
   onLogout: () => void;
 }
 
@@ -32,6 +33,7 @@ export function Sidebar({
   onCollapsedChange,
   onViewModeChange,
   onSectorSelect,
+  onEmployeeSelect,
   onLogout
 }: SidebarProps) {
   const [sectorsOpen, setSectorsOpen] = useState(true);
@@ -217,15 +219,16 @@ export function Sidebar({
                   <p className="text-xs text-sidebar-muted px-3 py-2">Nenhum funcionário cadastrado</p>
                 ) : (
                   employeeList.map(employee => (
-                    <div 
-                      key={employee.id} 
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/80"
+                    <button 
+                      key={employee.id}
+                      onClick={() => onEmployeeSelect?.(employee)}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-all duration-200 text-left"
                     >
                       <User className="w-3 h-3 text-sidebar-muted flex-shrink-0" />
                       <span className="truncate text-xs">
                         {employee.full_name || employee.email || 'Sem nome'}
                       </span>
-                    </div>
+                    </button>
                   ))
                 )}
               </div>
