@@ -9,7 +9,7 @@ import { UserManagement } from './UserManagement';
 import { VideoList } from './VideoList';
 import { EmployeeProgressReport } from './EmployeeProgressReport';
 import { Sector, Video } from '@/types/academy';
-import { Plus, Video as VideoIcon, FolderPlus, Users, Pencil, Trash2, BarChart3, ChevronDown, ChevronRight } from 'lucide-react';
+import { Plus, Video as VideoIcon, FolderPlus, Users, Pencil, Trash2, BarChart3, ChevronDown, ChevronRight, Play } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface AdminPanelProps {
@@ -56,6 +56,25 @@ export function AdminPanel({
   const [deletingSector, setDeletingSector] = useState<Sector | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [videosListOpen, setVideosListOpen] = useState(false);
+  const [openSectorIds, setOpenSectorIds] = useState<Set<string>>(new Set());
+
+  // Get videos grouped by sector
+  const getVideosForSector = (sectorId: string) => {
+    return videos.filter(v => v.sector_id === sectorId);
+  };
+
+  // Toggle a sector's video list
+  const toggleSectorVideos = (sectorId: string) => {
+    setOpenSectorIds(prev => {
+      const next = new Set(prev);
+      if (next.has(sectorId)) {
+        next.delete(sectorId);
+      } else {
+        next.add(sectorId);
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
     fetchUsersCount();
@@ -193,7 +212,7 @@ export function AdminPanel({
         </div>
       </div>
 
-      {/* Videos List - Collapsible */}
+      {/* Videos List - Organized by Sector */}
       <div className="bg-card rounded-xl shadow-card overflow-hidden">
         <button
           onClick={() => setVideosListOpen(!videosListOpen)}
@@ -207,20 +226,91 @@ export function AdminPanel({
           <VideoIcon className="w-5 h-5 text-primary" />
           <span className="font-semibold text-card-foreground">Vídeos Cadastrados</span>
           <span className="ml-auto text-sm px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-            {filteredVideos.length}
+            {videos.length}
           </span>
         </button>
         
         <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
-          videosListOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
+          videosListOpen ? 'max-h-[5000px] opacity-100' : 'max-h-0 opacity-0'
         }`}>
-          <div className="px-6 pb-6">
-            <VideoList
-              videos={filteredVideos}
-              getSectorName={getSectorName}
-              onEdit={setEditingVideo}
-              onDelete={setDeletingVideo}
-            />
+          <div className="px-6 pb-6 space-y-2">
+            {sectors.map(sector => {
+              const sectorVideos = getVideosForSector(sector.id);
+              const isSectorOpen = openSectorIds.has(sector.id);
+              
+              return (
+                <div key={sector.id} className="border border-border rounded-lg overflow-hidden">
+                  <button
+                    onClick={() => toggleSectorVideos(sector.id)}
+                    className="w-full flex items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors bg-muted/30"
+                  >
+                    {isSectorOpen ? (
+                      <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                    )}
+                    <FolderPlus className="w-4 h-4 text-primary" />
+                    <span className="font-medium text-card-foreground">{sector.name}</span>
+                    <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                      {sectorVideos.length} vídeo{sectorVideos.length !== 1 ? 's' : ''}
+                    </span>
+                  </button>
+                  
+                  <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                    isSectorOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
+                  }`}>
+                    <div className="p-3 space-y-2 bg-background">
+                      {sectorVideos.length === 0 ? (
+                        <p className="text-sm text-muted-foreground text-center py-4">
+                          Nenhum vídeo neste setor
+                        </p>
+                      ) : (
+                        sectorVideos.map(video => (
+                          <div
+                            key={video.id}
+                            className="flex items-center gap-3 p-3 bg-muted rounded-lg group"
+                          >
+                            <div className="relative w-20 h-12 bg-muted-foreground/20 rounded overflow-hidden flex-shrink-0">
+                              <img
+                                src={`https://img.youtube.com/vi/${video.youtube_id}/mqdefault.jpg`}
+                                alt={video.title}
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center bg-background/30">
+                                <Play className="w-5 h-5 text-foreground" />
+                              </div>
+                            </div>
+                            
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-medium text-card-foreground text-sm truncate">{video.title}</h4>
+                            </div>
+                            
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setEditingVideo(video)}
+                                className="h-7 w-7"
+                              >
+                                <Pencil className="w-3 h-3" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setDeletingVideo(video)}
+                                className="h-7 w-7 text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
