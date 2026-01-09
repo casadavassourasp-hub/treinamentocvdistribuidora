@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { X, Video } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sector } from '@/types/academy';
+import { extractYoutubeId } from '@/lib/errorHandler';
+import { toast } from 'sonner';
 
 interface AddVideoModalProps {
   sectors: Sector[];
@@ -15,15 +17,17 @@ export function AddVideoModal({ sectors, onClose, onSave }: AddVideoModalProps) 
   const [sectorId, setSectorId] = useState(sectors[0]?.id || '');
   const [description, setDescription] = useState('');
 
-  const extractYoutubeId = (url: string): string => {
-    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s]+)/);
-    return match ? match[1] : '';
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
     const youtube_id = extractYoutubeId(url);
-    if (title.trim() && youtube_id && sectorId) {
+    
+    if (!youtube_id) {
+      toast.error('URL do YouTube inválida. Verifique o link e tente novamente.');
+      return;
+    }
+    
+    if (title.trim() && sectorId) {
       onSave({
         title: title.trim(),
         description: description.trim(),
