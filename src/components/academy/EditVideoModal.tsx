@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { X } from 'lucide-react';
 import { Sector, Video } from '@/types/academy';
+import { extractYoutubeId } from '@/lib/errorHandler';
+import { toast } from 'sonner';
 
 interface EditVideoModalProps {
   video: Video;
@@ -19,17 +21,17 @@ export function EditVideoModal({ video, sectors, onClose, onSave }: EditVideoMod
   const [description, setDescription] = useState(video.description || '');
   const [loading, setLoading] = useState(false);
 
-  const extractYoutubeId = (url: string): string => {
-    const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
-    const match = url.match(regex);
-    return match ? match[1] : url;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     const youtubeId = extractYoutubeId(url);
     
-    if (!title || !youtubeId || !sectorId) return;
+    if (!youtubeId) {
+      toast.error('URL do YouTube inválida. Verifique o link e tente novamente.');
+      return;
+    }
+    
+    if (!title || !sectorId) return;
     
     setLoading(true);
     const result = await onSave(video.id, { title, description, sector_id: sectorId, youtube_id: youtubeId });

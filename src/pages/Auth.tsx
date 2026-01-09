@@ -9,12 +9,18 @@ import { supabase } from '@/integrations/supabase/client';
 import { Mail, Lock, User } from 'lucide-react';
 import logoCV from '@/assets/logo-cv-login.png';
 
+// Rate limiting constants
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 5 * 60 * 1000; // 5 minutes
+
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loginAttempts, setLoginAttempts] = useState(0);
+  const [lockoutUntil, setLockoutUntil] = useState<Date | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -35,14 +41,45 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  // Check and clear lockout if expired
+  useEffect(() => {
+    if (lockoutUntil && new Date() >= lockoutUntil) {
+      setLockoutUntil(null);
+      setLoginAttempts(0);
+    }
+  }, [lockoutUntil]);
+
+  const getRemainingLockoutSeconds = (): number => {
+    if (!lockoutUntil) return 0;
+    return Math.max(0, Math.ceil((lockoutUntil.getTime() - Date.now()) / 1000));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check if currently locked out
+    if (lockoutUntil && new Date() < lockoutUntil) {
+      const remainingSeconds = getRemainingLockoutSeconds();
+      const minutes = Math.floor(remainingSeconds / 60);
+      const seconds = remainingSeconds % 60;
+      toast({ 
+        title: 'Muitas tentativas', 
+        description: `Aguarde ${minutes}m ${seconds}s antes de tentar novamente.`,
+        variant: 'destructive' 
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        
+        // Reset attempts on successful login
+        setLoginAttempts(0);
+        setLockoutUntil(null);
         toast({ title: 'Bem-vindo de volta!' });
       } else {
         const redirectUrl = `${window.location.origin}/`;
@@ -61,17 +98,43 @@ const Auth = () => {
         });
       }
     } catch (error: any) {
-      let message = error.message;
-      if (message.includes('User already registered')) {
-        message = 'Este email já está cadastrado.';
-      } else if (message.includes('Invalid login credentials')) {
-        message = 'Email ou senha inválidos.';
+      // Increment failed attempts for login only
+      if (isLogin) {
+        const newAttempts = loginAttempts + 1;
+        setLoginAttempts(newAttempts);
+        
+        // Lock after MAX_LOGIN_ATTEMPTS failed attempts
+        if (newAttempts >= MAX_LOGIN_ATTEMPTS) {
+          setLockoutUntil(new Date(Date.now() + LOCKOUT_DURATION_MS));
+          toast({ 
+            title: 'Conta temporariamente bloqueada', 
+            description: 'Muitas tentativas de login. Tente novamente em 5 minutos.',
+            variant: 'destructive' 
+          });
+          setLoading(false);
+          return;
+        }
       }
+      
+      // Map error messages to safe, user-friendly versions
+      let message = 'Ocorreu um erro. Tente novamente.';
+      if (error.message?.includes('User already registered')) {
+        message = 'Este email já está cadastrado.';
+      } else if (error.message?.includes('Invalid login credentials')) {
+        message = 'Email ou senha inválidos.';
+      } else if (error.message?.includes('Email not confirmed')) {
+        message = 'Confirme seu email antes de fazer login.';
+      } else if (error.message?.includes('Password')) {
+        message = 'A senha deve ter pelo menos 6 caracteres.';
+      }
+      
       toast({ title: 'Erro', description: message, variant: 'destructive' });
     } finally {
       setLoading(false);
     }
   };
+
+  const isLockedOut = lockoutUntil && new Date() < lockoutUntil;
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -119,6 +182,7 @@ const Auth = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-10"
                   required
+                  disabled={isLockedOut}
                 />
               </div>
             </div>
@@ -136,12 +200,13 @@ const Auth = () => {
                   className="pl-10"
                   minLength={6}
                   required
+                  disabled={isLockedOut}
                 />
               </div>
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Carregando...' : isLogin ? 'Entrar' : 'Criar conta'}
+            <Button type="submit" className="w-full" disabled={loading || isLockedOut}>
+              {loading ? 'Carregando...' : isLockedOut ? 'Bloqueado temporariamente' : isLogin ? 'Entrar' : 'Criar conta'}
             </Button>
           </form>
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Sector, Video, ViewMode } from '@/types/academy';
 import { useToast } from '@/hooks/use-toast';
+import { handleDatabaseError } from '@/lib/errorHandler';
 
 export interface Employee {
   id: string;
@@ -104,8 +105,8 @@ export function useAcademy() {
       toast({ title: 'Setor criado com sucesso!' });
       return { error: null };
     } catch (error: any) {
-      console.error('Error adding sector:', error);
-      toast({ title: 'Erro ao criar setor', description: error.message, variant: 'destructive' });
+      const safeMessage = handleDatabaseError(error, 'addSector');
+      toast({ title: 'Erro ao criar setor', description: safeMessage, variant: 'destructive' });
       return { error };
     }
   };
@@ -123,8 +124,8 @@ export function useAcademy() {
       toast({ title: 'Setor atualizado com sucesso!' });
       return { error: null };
     } catch (error: any) {
-      console.error('Error updating sector:', error);
-      toast({ title: 'Erro ao atualizar setor', description: error.message, variant: 'destructive' });
+      const safeMessage = handleDatabaseError(error, 'updateSector');
+      toast({ title: 'Erro ao atualizar setor', description: safeMessage, variant: 'destructive' });
       return { error };
     }
   };
@@ -142,8 +143,8 @@ export function useAcademy() {
       toast({ title: 'Setor excluído com sucesso!' });
       return { error: null };
     } catch (error: any) {
-      console.error('Error deleting sector:', error);
-      toast({ title: 'Erro ao excluir setor', description: error.message, variant: 'destructive' });
+      const safeMessage = handleDatabaseError(error, 'deleteSector');
+      toast({ title: 'Erro ao excluir setor', description: safeMessage, variant: 'destructive' });
       return { error };
     }
   };
@@ -164,8 +165,8 @@ export function useAcademy() {
       toast({ title: 'Vídeo adicionado com sucesso!' });
       return { error: null };
     } catch (error: any) {
-      console.error('Error adding video:', error);
-      toast({ title: 'Erro ao adicionar vídeo', description: error.message, variant: 'destructive' });
+      const safeMessage = handleDatabaseError(error, 'addVideo');
+      toast({ title: 'Erro ao adicionar vídeo', description: safeMessage, variant: 'destructive' });
       return { error };
     }
   };
@@ -183,8 +184,8 @@ export function useAcademy() {
       toast({ title: 'Vídeo atualizado com sucesso!' });
       return { error: null };
     } catch (error: any) {
-      console.error('Error updating video:', error);
-      toast({ title: 'Erro ao atualizar vídeo', description: error.message, variant: 'destructive' });
+      const safeMessage = handleDatabaseError(error, 'updateVideo');
+      toast({ title: 'Erro ao atualizar vídeo', description: safeMessage, variant: 'destructive' });
       return { error };
     }
   };
@@ -202,8 +203,8 @@ export function useAcademy() {
       toast({ title: 'Vídeo excluído com sucesso!' });
       return { error: null };
     } catch (error: any) {
-      console.error('Error deleting video:', error);
-      toast({ title: 'Erro ao excluir vídeo', description: error.message, variant: 'destructive' });
+      const safeMessage = handleDatabaseError(error, 'deleteVideo');
+      toast({ title: 'Erro ao excluir vídeo', description: safeMessage, variant: 'destructive' });
       return { error };
     }
   };
