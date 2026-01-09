@@ -209,7 +209,10 @@ export function Sidebar({
             {/* Collapsible Employees Folder */}
             <div>
               <button
-                onClick={() => setEmployeesOpen(!employeesOpen)}
+                onClick={() => {
+                  setEmployeesOpen(!employeesOpen);
+                  onAdminSectionSelect?.('users');
+                }}
                 className="w-full flex items-center gap-2 px-2 py-2 rounded-lg text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent/50 transition-all duration-200"
               >
                 {employeesOpen ? (
