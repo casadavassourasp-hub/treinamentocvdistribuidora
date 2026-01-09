@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sidebar } from '@/components/academy/Sidebar';
+import { Sidebar, AdminSection } from '@/components/academy/Sidebar';
 import { VideoGrid } from '@/components/academy/VideoGrid';
 import { VideoModal } from '@/components/academy/VideoModal';
 import { AdminPanel } from '@/components/academy/AdminPanel';
@@ -54,6 +54,7 @@ const Index = () => {
   const [watchingVideo, setWatchingVideo] = useState<Video | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [adminSection, setAdminSection] = useState<AdminSection>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -104,9 +105,14 @@ const Index = () => {
         onViewModeChange={(mode) => {
           setViewMode(mode);
           setSelectedEmployee(null);
+          setAdminSection(null);
         }}
         onSectorSelect={setSelectedSectorId}
         onEmployeeSelect={setSelectedEmployee}
+        onAdminSectionSelect={(section) => {
+          setAdminSection(section);
+          setSelectedEmployee(null);
+        }}
         onLogout={handleLogout}
       />
 
@@ -185,6 +191,7 @@ const Index = () => {
               videos={allVideos}
               videosCount={allVideos.length}
               selectedSectorId={selectedSectorId}
+              activeSection={adminSection}
               onAddSector={addSector}
               onUpdateSector={updateSector}
               onDeleteSector={deleteSector}

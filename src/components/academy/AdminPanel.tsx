@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { AddSectorModal } from './AddSectorModal';
 import { AddVideoModal } from './AddVideoModal';
@@ -11,12 +11,14 @@ import { EmployeeProgressReport } from './EmployeeProgressReport';
 import { Sector, Video } from '@/types/academy';
 import { Plus, Video as VideoIcon, FolderPlus, Users, Pencil, Trash2, BarChart3, ChevronDown, ChevronRight, Play } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { AdminSection } from './Sidebar';
 
 interface AdminPanelProps {
   sectors: Sector[];
   videos: Video[];
   videosCount: number;
   selectedSectorId: string | null;
+  activeSection?: AdminSection;
   onAddSector: (name: string) => Promise<{ error: any }>;
   onUpdateSector: (id: string, name: string) => Promise<{ error: any }>;
   onDeleteSector: (id: string) => Promise<{ error: any }>;
@@ -31,6 +33,7 @@ export function AdminPanel({
   videos,
   videosCount, 
   selectedSectorId,
+  activeSection,
   onAddSector, 
   onUpdateSector,
   onDeleteSector,
@@ -39,6 +42,7 @@ export function AdminPanel({
   onDeleteVideo,
   getSectorName 
 }: AdminPanelProps) {
+  const sectorsRef = useRef<HTMLDivElement>(null);
   // Filter videos based on selected sector
   const filteredVideos = selectedSectorId 
     ? videos.filter(v => v.sector_id === selectedSectorId)
@@ -79,6 +83,13 @@ export function AdminPanel({
   useEffect(() => {
     fetchUsersCount();
   }, []);
+
+  // Scroll to sectors section when activeSection is 'sectors'
+  useEffect(() => {
+    if (activeSection === 'sectors' && sectorsRef.current) {
+      sectorsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [activeSection]);
 
   const fetchUsersCount = async () => {
     const { count } = await supabase
@@ -177,7 +188,7 @@ export function AdminPanel({
       </div>
 
       {/* Sectors List */}
-      <div className="bg-card rounded-xl p-6 shadow-card">
+      <div ref={sectorsRef} className="bg-card rounded-xl p-6 shadow-card scroll-mt-6">
         <h3 className="font-semibold text-card-foreground mb-4">Setores Cadastrados</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {sectors.map((sector) => (
