@@ -118,7 +118,7 @@ export function AdminPanel({
     return <EmployeeProgressReport onBack={() => setShowProgressReport(false)} />;
   }
 
-  if (showUserManagement) {
+  if (showUserManagement || activeSection === 'users') {
     return <UserManagement onBack={() => setShowUserManagement(false)} />;
   }
 
