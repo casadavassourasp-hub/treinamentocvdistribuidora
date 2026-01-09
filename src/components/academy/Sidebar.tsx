@@ -6,6 +6,8 @@ import { Sector, ViewMode, Video } from '@/types/academy';
 import { Employee } from '@/hooks/useAcademy';
 import logoCV from '@/assets/logo-cv-distribuidora.png';
 
+export type AdminSection = 'sectors' | 'videos' | 'users' | null;
+
 interface SidebarProps {
   sectors: Sector[];
   videos: Video[];
@@ -19,6 +21,7 @@ interface SidebarProps {
   onViewModeChange: (mode: ViewMode) => void;
   onSectorSelect: (sectorId: string | null) => void;
   onEmployeeSelect?: (employee: Employee) => void;
+  onAdminSectionSelect?: (section: AdminSection) => void;
   onLogout: () => void;
 }
 
@@ -35,6 +38,7 @@ export function Sidebar({
   onViewModeChange,
   onSectorSelect,
   onEmployeeSelect,
+  onAdminSectionSelect,
   onLogout
 }: SidebarProps) {
   const [sectorsOpen, setSectorsOpen] = useState(true);
@@ -127,7 +131,10 @@ export function Sidebar({
             {/* Collapsible Sectors Folder */}
             <div>
               <button
-                onClick={() => setSectorsOpen(!sectorsOpen)}
+                onClick={() => {
+                  setSectorsOpen(!sectorsOpen);
+                  onAdminSectionSelect?.('sectors');
+                }}
                 className="w-full flex items-center gap-2 px-2 py-2 rounded-lg text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent/50 transition-all duration-200"
               >
                 {sectorsOpen ? (
