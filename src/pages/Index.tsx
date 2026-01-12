@@ -36,6 +36,7 @@ const Index = () => {
     updateVideo,
     deleteVideo,
     getSectorName,
+    refetchVideos,
   } = useAcademy();
   
   const { isWatched, markAsWatched, getWatchedCount, loading: progressLoading } = useVideoProgress();
@@ -199,6 +200,7 @@ const Index = () => {
               onUpdateVideo={updateVideo}
               onDeleteVideo={deleteVideo}
               getSectorName={getSectorName}
+              onRefreshVideos={refetchVideos}
             />
           )}
         </section>

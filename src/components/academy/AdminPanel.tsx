@@ -8,8 +8,9 @@ import { DeleteConfirmDialog } from './DeleteConfirmDialog';
 import { UserManagement } from './UserManagement';
 import { VideoList } from './VideoList';
 import { EmployeeProgressReport } from './EmployeeProgressReport';
+import { YouTubeSyncModal } from './YouTubeSyncModal';
 import { Sector, Video } from '@/types/academy';
-import { Plus, Video as VideoIcon, FolderPlus, Users, Pencil, Trash2, BarChart3, ChevronDown, ChevronRight, Play } from 'lucide-react';
+import { Plus, Video as VideoIcon, FolderPlus, Users, Pencil, Trash2, BarChart3, ChevronDown, ChevronRight, Play, Youtube } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminSection } from './Sidebar';
 
@@ -26,6 +27,7 @@ interface AdminPanelProps {
   onUpdateVideo: (id: string, data: { title: string; description: string; sector_id: string; youtube_id: string }) => Promise<{ error: any }>;
   onDeleteVideo: (id: string) => Promise<{ error: any }>;
   getSectorName: (sectorId: string | null) => string;
+  onRefreshVideos?: () => void;
 }
 
 export function AdminPanel({ 
@@ -40,7 +42,8 @@ export function AdminPanel({
   onAddVideo,
   onUpdateVideo,
   onDeleteVideo,
-  getSectorName 
+  getSectorName,
+  onRefreshVideos 
 }: AdminPanelProps) {
   const sectorsRef = useRef<HTMLDivElement>(null);
   // Filter videos based on selected sector
@@ -51,6 +54,7 @@ export function AdminPanel({
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [showUserManagement, setShowUserManagement] = useState(false);
   const [showProgressReport, setShowProgressReport] = useState(false);
+  const [showYouTubeSync, setShowYouTubeSync] = useState(false);
   const [usersCount, setUsersCount] = useState(0);
   
   // Edit/Delete state
@@ -175,6 +179,13 @@ export function AdminPanel({
           <Button onClick={() => setShowVideoModal(true)}>
             <Plus className="w-4 h-4" />
             Novo Vídeo
+          </Button>
+          <Button 
+            onClick={() => setShowYouTubeSync(true)}
+            className="bg-red-600 hover:bg-red-700 text-white"
+          >
+            <Youtube className="w-4 h-4" />
+            Sincronizar YouTube
           </Button>
           <Button variant="secondary" onClick={() => setShowUserManagement(true)}>
             <Users className="w-4 h-4" />
@@ -379,6 +390,16 @@ export function AdminPanel({
           onConfirm={handleDeleteSector}
           onCancel={() => setDeletingSector(null)}
           loading={deleteLoading}
+        />
+      )}
+      {showYouTubeSync && (
+        <YouTubeSyncModal
+          sectors={sectors}
+          onClose={() => setShowYouTubeSync(false)}
+          onSyncComplete={() => {
+            onRefreshVideos?.();
+            setShowYouTubeSync(false);
+          }}
         />
       )}
     </div>
