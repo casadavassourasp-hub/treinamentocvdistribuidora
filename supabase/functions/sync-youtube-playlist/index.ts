@@ -9,6 +9,7 @@ interface YouTubePlaylistItem {
   snippet: {
     title: string;
     description: string;
+    publishedAt: string;
     resourceId: {
       videoId: string;
     };
@@ -174,7 +175,7 @@ Deno.serve(async (req) => {
               continue;
             }
 
-            // Insert new video
+            // Insert new video with YouTube publish date
             const { error: insertError } = await supabaseAdmin
               .from("videos")
               .insert({
@@ -183,6 +184,7 @@ Deno.serve(async (req) => {
                 youtube_id: videoId,
                 sector_id: mapping.sector_id,
                 created_by: userData.user.id,
+                published_at: item.snippet.publishedAt || null,
               });
 
             if (insertError) {

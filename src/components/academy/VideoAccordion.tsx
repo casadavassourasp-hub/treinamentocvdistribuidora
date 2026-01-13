@@ -28,7 +28,12 @@ export function VideoAccordion({
     .map((sector) => {
       const sectorVideos = videos
         .filter((v) => v.sector_id === sector.id)
-        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+        .sort((a, b) => {
+          // Use published_at (YouTube date) if available, otherwise fall back to created_at
+          const dateA = a.published_at || a.created_at;
+          const dateB = b.published_at || b.created_at;
+          return new Date(dateA).getTime() - new Date(dateB).getTime();
+        });
       const watchedCount = sectorVideos.filter((v) => isWatched?.(v.id)).length;
       return {
         sector,

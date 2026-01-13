@@ -257,6 +257,7 @@ export type Database = {
           created_by: string | null
           description: string | null
           id: string
+          published_at: string | null
           sector_id: string | null
           title: string
           youtube_id: string
@@ -266,6 +267,7 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           id?: string
+          published_at?: string | null
           sector_id?: string | null
           title: string
           youtube_id: string
@@ -275,6 +277,7 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           id?: string
+          published_at?: string | null
           sector_id?: string | null
           title?: string
           youtube_id?: string
