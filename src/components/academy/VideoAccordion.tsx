@@ -26,7 +26,9 @@ export function VideoAccordion({
   // Group videos by sector
   const videosBySector = sectors
     .map((sector) => {
-      const sectorVideos = videos.filter((v) => v.sector_id === sector.id);
+      const sectorVideos = videos
+        .filter((v) => v.sector_id === sector.id)
+        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
       const watchedCount = sectorVideos.filter((v) => isWatched?.(v.id)).length;
       return {
         sector,
