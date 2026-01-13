@@ -16,15 +16,54 @@ interface YouTubePlaylistItem {
   };
 }
 
+interface YouTubeVideoItem {
+  id: string;
+  snippet: {
+    publishedAt: string;
+  };
+}
+
 interface YouTubePlaylistResponse {
   items: YouTubePlaylistItem[];
   nextPageToken?: string;
+}
+
+interface YouTubeVideosResponse {
+  items: YouTubeVideoItem[];
 }
 
 interface PlaylistMapping {
   playlist_id: string;
   playlist_name: string | null;
   sector_id: string;
+}
+
+// Fetch actual video publish dates from YouTube Videos API
+async function fetchVideoPublishDates(videoIds: string[], apiKey: string): Promise<Map<string, string>> {
+  const publishDates = new Map<string, string>();
+  
+  // Process in batches of 50 (YouTube API limit)
+  for (let i = 0; i < videoIds.length; i += 50) {
+    const batch = videoIds.slice(i, i + 50);
+    const url = new URL("https://www.googleapis.com/youtube/v3/videos");
+    url.searchParams.set("part", "snippet");
+    url.searchParams.set("id", batch.join(","));
+    url.searchParams.set("key", apiKey);
+    
+    try {
+      const response = await fetch(url.toString());
+      if (response.ok) {
+        const data: YouTubeVideosResponse = await response.json();
+        for (const item of data.items || []) {
+          publishDates.set(item.id, item.snippet.publishedAt);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching video details:", error);
+    }
+  }
+  
+  return publishDates;
 }
 
 Deno.serve(async (req) => {
@@ -88,6 +127,65 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Parse request body
+    const body = await req.json().catch(() => ({}));
+    const updateExisting = body.updateExisting === true;
+
+    // If updateExisting flag is set, update publish dates for existing videos
+    if (updateExisting) {
+      console.log("Updating publish dates for existing videos...");
+      
+      const { data: videosToUpdate, error: fetchError } = await supabaseAdmin
+        .from("videos")
+        .select("id, youtube_id")
+        .is("published_at", null);
+      
+      if (fetchError) {
+        console.error("Failed to fetch videos:", fetchError);
+        return new Response(
+          JSON.stringify({ error: "Erro ao buscar vídeos" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      if (!videosToUpdate || videosToUpdate.length === 0) {
+        return new Response(
+          JSON.stringify({ message: "Todos os vídeos já possuem data de publicação.", updated: 0 }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      console.log(`Found ${videosToUpdate.length} videos without publish date`);
+      
+      const youtubeIds = videosToUpdate.map(v => v.youtube_id);
+      const publishDates = await fetchVideoPublishDates(youtubeIds, youtubeApiKey);
+      
+      let updated = 0;
+      for (const video of videosToUpdate) {
+        const publishDate = publishDates.get(video.youtube_id);
+        if (publishDate) {
+          const { error: updateError } = await supabaseAdmin
+            .from("videos")
+            .update({ published_at: publishDate })
+            .eq("id", video.id);
+          
+          if (!updateError) {
+            updated++;
+          }
+        }
+      }
+
+      console.log(`Updated ${updated} videos with publish dates`);
+      
+      return new Response(
+        JSON.stringify({ 
+          message: `Atualizado ${updated} vídeo(s) com data de publicação do YouTube.`,
+          updated 
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Get playlist mappings
     const { data: mappings, error: mappingsError } = await supabaseAdmin
       .from("youtube_playlist_mappings")
@@ -134,6 +232,7 @@ Deno.serve(async (req) => {
     let totalSynced = 0;
     let totalSkipped = 0;
     const errors: string[] = [];
+    const newVideoIds: string[] = [];
 
     // Process each playlist
     for (const mapping of mappings as PlaylistMapping[]) {
@@ -166,7 +265,9 @@ Deno.serve(async (req) => {
           const data: YouTubePlaylistResponse = await response.json();
           console.log(`Received ${data.items?.length || 0} items from playlist ${mapping.playlist_id}`);
 
-          // Process videos
+          // Collect new video IDs first
+          const newVideosInBatch: { videoId: string; title: string; description: string; sectorId: string }[] = [];
+          
           for (const item of data.items || []) {
             const videoId = item.snippet.resourceId.videoId;
             
@@ -174,31 +275,48 @@ Deno.serve(async (req) => {
               totalSkipped++;
               continue;
             }
+            
+            newVideosInBatch.push({
+              videoId,
+              title: item.snippet.title,
+              description: item.snippet.description || "",
+              sectorId: mapping.sector_id,
+            });
+            newVideoIds.push(videoId);
+          }
 
-            // Insert new video with YouTube publish date
-            const { error: insertError } = await supabaseAdmin
-              .from("videos")
-              .insert({
-                title: item.snippet.title,
-                description: item.snippet.description || null,
-                youtube_id: videoId,
-                sector_id: mapping.sector_id,
-                created_by: userData.user.id,
-                published_at: item.snippet.publishedAt || null,
-              });
+          // Fetch actual publish dates for new videos
+          if (newVideosInBatch.length > 0) {
+            const batchVideoIds = newVideosInBatch.map(v => v.videoId);
+            const publishDates = await fetchVideoPublishDates(batchVideoIds, youtubeApiKey);
+            
+            // Insert new videos with actual publish dates
+            for (const video of newVideosInBatch) {
+              const publishDate = publishDates.get(video.videoId);
+              
+              const { error: insertError } = await supabaseAdmin
+                .from("videos")
+                .insert({
+                  title: video.title,
+                  description: video.description || null,
+                  youtube_id: video.videoId,
+                  sector_id: video.sectorId,
+                  created_by: userData.user.id,
+                  published_at: publishDate || null,
+                });
 
-            if (insertError) {
-              console.error(`Failed to insert video ${videoId}:`, insertError);
-              if (insertError.code === "23505") {
-                // Duplicate, skip
-                totalSkipped++;
+              if (insertError) {
+                console.error(`Failed to insert video ${video.videoId}:`, insertError);
+                if (insertError.code === "23505") {
+                  totalSkipped++;
+                } else {
+                  errors.push(`Vídeo ${video.title}: ${insertError.message}`);
+                }
               } else {
-                errors.push(`Vídeo ${item.snippet.title}: ${insertError.message}`);
+                console.log(`Synced video: ${video.title} (published: ${publishDate})`);
+                existingYoutubeIds.add(video.videoId);
+                totalSynced++;
               }
-            } else {
-              console.log(`Synced video: ${item.snippet.title}`);
-              existingYoutubeIds.add(videoId); // Prevent duplicates in same run
-              totalSynced++;
             }
           }
 

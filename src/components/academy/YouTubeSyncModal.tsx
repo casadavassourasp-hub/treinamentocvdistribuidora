@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Youtube, Plus, Trash2, RefreshCw, Link, FolderOpen } from 'lucide-react';
+import { X, Youtube, Plus, Trash2, RefreshCw, Link, FolderOpen, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
@@ -27,6 +27,7 @@ export function YouTubeSyncModal({ sectors, onClose, onSyncComplete }: YouTubeSy
   const [newPlaylistName, setNewPlaylistName] = useState('');
   const [newSectorId, setNewSectorId] = useState(sectors[0]?.id || '');
   const [addingMapping, setAddingMapping] = useState(false);
+  const [updatingDates, setUpdatingDates] = useState(false);
 
   useEffect(() => {
     fetchMappings();
@@ -171,6 +172,38 @@ export function YouTubeSyncModal({ sectors, onClose, onSyncComplete }: YouTubeSy
     }
   };
 
+  const updatePublishDates = async () => {
+    setUpdatingDates(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      
+      const response = await supabase.functions.invoke('sync-youtube-playlist', {
+        headers: {
+          Authorization: `Bearer ${sessionData.session?.access_token}`,
+        },
+        body: { updateExisting: true },
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
+
+      const result = response.data;
+      
+      if (result.updated > 0) {
+        toast.success(result.message);
+        onSyncComplete();
+      } else {
+        toast.info(result.message);
+      }
+    } catch (error: any) {
+      console.error('Update dates error:', error);
+      toast.error(error.message || 'Erro ao atualizar datas');
+    } finally {
+      setUpdatingDates(false);
+    }
+  };
+
   const getSectorName = (sectorId: string) => {
     return sectors.find(s => s.id === sectorId)?.name || 'Setor desconhecido';
   };
@@ -311,24 +344,44 @@ export function YouTubeSyncModal({ sectors, onClose, onSyncComplete }: YouTubeSy
         </div>
 
         {/* Footer */}
-        <div className="border-t border-border p-4 flex gap-3">
-          <Button variant="outline" onClick={onClose} className="flex-1">
-            Fechar
-          </Button>
+        <div className="border-t border-border p-4 flex flex-col gap-3">
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={onClose} className="flex-1">
+              Fechar
+            </Button>
+            <Button
+              onClick={syncVideos}
+              disabled={syncing || updatingDates || mappings.length === 0}
+              className="flex-1 bg-red-600 hover:bg-red-700"
+            >
+              {syncing ? (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  Sincronizando...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Sincronizar Agora
+                </>
+              )}
+            </Button>
+          </div>
           <Button
-            onClick={syncVideos}
-            disabled={syncing || mappings.length === 0}
-            className="flex-1 bg-red-600 hover:bg-red-700"
+            variant="outline"
+            onClick={updatePublishDates}
+            disabled={syncing || updatingDates}
+            className="w-full"
           >
-            {syncing ? (
+            {updatingDates ? (
               <>
-                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                Sincronizando...
+                <Calendar className="w-4 h-4 mr-2 animate-pulse" />
+                Atualizando datas...
               </>
             ) : (
               <>
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Sincronizar Agora
+                <Calendar className="w-4 h-4 mr-2" />
+                Atualizar datas de publicação
               </>
             )}
           </Button>
