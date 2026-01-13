@@ -11,8 +11,9 @@ export interface Video {
   description: string | null;
   sector_id: string | null;
   youtube_id: string;
-  created_at?: string;
+  created_at: string;
   created_by?: string;
+  published_at?: string | null;
 }
 
 export type ViewMode = 'employee' | 'admin';
