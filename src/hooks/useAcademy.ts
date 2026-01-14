@@ -77,6 +77,7 @@ export function useAcademy() {
       const { data, error } = await supabase
         .from('videos')
         .select('*')
+        .order('published_at', { ascending: true, nullsFirst: false })
         .order('created_at', { ascending: true });
 
       if (error) throw error;
