@@ -66,9 +66,15 @@ export function AdminPanel({
   const [videosListOpen, setVideosListOpen] = useState(false);
   const [openSectorIds, setOpenSectorIds] = useState<Set<string>>(new Set());
 
-  // Get videos grouped by sector
+  // Get videos grouped by sector, sorted by published_at (oldest first)
   const getVideosForSector = (sectorId: string) => {
-    return videos.filter(v => v.sector_id === sectorId);
+    return videos
+      .filter(v => v.sector_id === sectorId)
+      .sort((a, b) => {
+        const dateA = a.published_at || a.created_at;
+        const dateB = b.published_at || b.created_at;
+        return new Date(dateA).getTime() - new Date(dateB).getTime();
+      });
   };
 
   // Toggle a sector's video list

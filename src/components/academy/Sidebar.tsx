@@ -50,9 +50,15 @@ export function Sidebar({
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
-  // Get videos for a specific sector
+  // Get videos for a specific sector, sorted by published_at (oldest first)
   const getVideosForSector = (sectorId: string) => {
-    return videos.filter(v => v.sector_id === sectorId);
+    return videos
+      .filter(v => v.sector_id === sectorId)
+      .sort((a, b) => {
+        const dateA = a.published_at || a.created_at;
+        const dateB = b.published_at || b.created_at;
+        return new Date(dateA).getTime() - new Date(dateB).getTime();
+      });
   };
 
   // Toggle a sector's video list
