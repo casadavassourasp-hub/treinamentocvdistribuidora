@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowUpDown, Users, Flame, Trophy, Video, ChevronDown, ChevronRight, FolderOpen } from 'lucide-react';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { DateRangeFilter, DateRange } from './DateRangeFilter';
 
 interface SectorPoints {
   sector_id: string;
@@ -36,16 +36,15 @@ export function EmployeeProgressReport({ onBack }: EmployeeProgressReportProps) 
   const [sortField, setSortField] = useState<SortField>('points');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [dateRange, setDateRange] = useState<DateRange>({ from: undefined, to: undefined });
 
   useEffect(() => {
     const fetchEmployeeProgress = async () => {
       setLoading(true);
 
-      // Fetch all data in parallel
-      const [profilesResult, pointsResult, sectorPointsResult, sectorsResult] = await Promise.all([
+      // Fetch base data
+      const [profilesResult, sectorsResult] = await Promise.all([
         supabase.from('profiles').select('id, full_name, email'),
-        supabase.from('user_points').select('user_id, total_points, videos_watched, current_streak, longest_streak'),
-        supabase.from('user_sector_points').select('user_id, sector_id, points, videos_watched'),
         supabase.from('sectors').select('id, name'),
       ]);
 
@@ -55,46 +54,140 @@ export function EmployeeProgressReport({ onBack }: EmployeeProgressReportProps) 
         return;
       }
 
-      const pointsMap = new Map(pointsResult.data?.map((p) => [p.user_id, p]));
       const sectorsMap = new Map(sectorsResult.data?.map((s) => [s.id, s.name]));
-      
-      // Group sector points by user
-      const userSectorPointsMap = new Map<string, SectorPoints[]>();
-      sectorPointsResult.data?.forEach((sp) => {
-        const existing = userSectorPointsMap.get(sp.user_id) || [];
-        existing.push({
-          sector_id: sp.sector_id,
-          sector_name: sectorsMap.get(sp.sector_id) || 'Setor Desconhecido',
-          points: sp.points ?? 0,
-          videos_watched: sp.videos_watched ?? 0,
-        });
-        userSectorPointsMap.set(sp.user_id, existing);
-      });
 
-      const employeeData: EmployeeProgress[] = (profilesResult.data || []).map((profile) => {
-        const userPoints = pointsMap.get(profile.id);
-        const sectorPoints = userSectorPointsMap.get(profile.id) || [];
-        // Sort sector points by points descending
-        sectorPoints.sort((a, b) => b.points - a.points);
+      // If no date filter, use the aggregated tables for better performance
+      if (!dateRange.from && !dateRange.to) {
+        const [pointsResult, sectorPointsResult] = await Promise.all([
+          supabase.from('user_points').select('user_id, total_points, videos_watched, current_streak, longest_streak'),
+          supabase.from('user_sector_points').select('user_id, sector_id, points, videos_watched'),
+        ]);
+
+        const pointsMap = new Map(pointsResult.data?.map((p) => [p.user_id, p]));
         
-        return {
-          user_id: profile.id,
-          full_name: profile.full_name,
-          email: profile.email,
-          total_points: userPoints?.total_points || 0,
-          videos_watched: userPoints?.videos_watched || 0,
-          current_streak: userPoints?.current_streak || 0,
-          longest_streak: userPoints?.longest_streak || 0,
-          sector_points: sectorPoints,
-        };
-      });
+        const userSectorPointsMap = new Map<string, SectorPoints[]>();
+        sectorPointsResult.data?.forEach((sp) => {
+          const existing = userSectorPointsMap.get(sp.user_id) || [];
+          existing.push({
+            sector_id: sp.sector_id,
+            sector_name: sectorsMap.get(sp.sector_id) || 'Setor Desconhecido',
+            points: sp.points ?? 0,
+            videos_watched: sp.videos_watched ?? 0,
+          });
+          userSectorPointsMap.set(sp.user_id, existing);
+        });
 
-      setEmployees(employeeData);
+        const employeeData: EmployeeProgress[] = (profilesResult.data || []).map((profile) => {
+          const userPoints = pointsMap.get(profile.id);
+          const sectorPoints = userSectorPointsMap.get(profile.id) || [];
+          sectorPoints.sort((a, b) => b.points - a.points);
+          
+          return {
+            user_id: profile.id,
+            full_name: profile.full_name,
+            email: profile.email,
+            total_points: userPoints?.total_points || 0,
+            videos_watched: userPoints?.videos_watched || 0,
+            current_streak: userPoints?.current_streak || 0,
+            longest_streak: userPoints?.longest_streak || 0,
+            sector_points: sectorPoints,
+          };
+        });
+
+        setEmployees(employeeData);
+      } else {
+        // Date filter active - calculate from video_progress
+        let query = supabase
+          .from('video_progress')
+          .select('user_id, video_id, watched_at, videos(sector_id)')
+          .eq('watched', true);
+
+        if (dateRange.from) {
+          query = query.gte('watched_at', dateRange.from.toISOString());
+        }
+        if (dateRange.to) {
+          const endOfDay = new Date(dateRange.to);
+          endOfDay.setHours(23, 59, 59, 999);
+          query = query.lte('watched_at', endOfDay.toISOString());
+        }
+
+        const progressResult = await query;
+
+        if (progressResult.error) {
+          console.error('Error fetching video progress:', progressResult.error);
+          setLoading(false);
+          return;
+        }
+
+        // Calculate points from video progress
+        const userStatsMap = new Map<string, { points: number; videos: number; sectorStats: Map<string, { points: number; videos: number }> }>();
+
+        (progressResult.data || []).forEach((progress) => {
+          const userId = progress.user_id;
+          const sectorId = (progress.videos as any)?.sector_id;
+          
+          if (!userStatsMap.has(userId)) {
+            userStatsMap.set(userId, { points: 0, videos: 0, sectorStats: new Map() });
+          }
+          
+          const userStats = userStatsMap.get(userId)!;
+          userStats.points += 10; // 10 points per video
+          userStats.videos += 1;
+
+          if (sectorId) {
+            if (!userStats.sectorStats.has(sectorId)) {
+              userStats.sectorStats.set(sectorId, { points: 0, videos: 0 });
+            }
+            const sectorStats = userStats.sectorStats.get(sectorId)!;
+            sectorStats.points += 10;
+            sectorStats.videos += 1;
+          }
+        });
+
+        // Get current streak info from user_points (not date-filtered)
+        const pointsResult = await supabase
+          .from('user_points')
+          .select('user_id, current_streak, longest_streak');
+        
+        const streakMap = new Map(pointsResult.data?.map((p) => [p.user_id, { current: p.current_streak || 0, longest: p.longest_streak || 0 }]));
+
+        const employeeData: EmployeeProgress[] = (profilesResult.data || []).map((profile) => {
+          const userStats = userStatsMap.get(profile.id);
+          const streakInfo = streakMap.get(profile.id);
+          
+          const sectorPoints: SectorPoints[] = [];
+          if (userStats) {
+            userStats.sectorStats.forEach((stats, sectorId) => {
+              sectorPoints.push({
+                sector_id: sectorId,
+                sector_name: sectorsMap.get(sectorId) || 'Setor Desconhecido',
+                points: stats.points,
+                videos_watched: stats.videos,
+              });
+            });
+            sectorPoints.sort((a, b) => b.points - a.points);
+          }
+          
+          return {
+            user_id: profile.id,
+            full_name: profile.full_name,
+            email: profile.email,
+            total_points: userStats?.points || 0,
+            videos_watched: userStats?.videos || 0,
+            current_streak: streakInfo?.current || 0,
+            longest_streak: streakInfo?.longest || 0,
+            sector_points: sectorPoints,
+          };
+        });
+
+        setEmployees(employeeData);
+      }
+
       setLoading(false);
     };
 
     fetchEmployeeProgress();
-  }, []);
+  }, [dateRange]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -144,14 +237,18 @@ export function EmployeeProgressReport({ onBack }: EmployeeProgressReportProps) 
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={onBack}>
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <div>
-          <h2 className="text-xl font-bold text-card-foreground">Relatório de Progresso</h2>
-          <p className="text-sm text-muted-foreground">Acompanhe o desempenho de todos os funcionários</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={onBack}>
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div>
+            <h2 className="text-xl font-bold text-card-foreground">Relatório de Progresso</h2>
+            <p className="text-sm text-muted-foreground">Acompanhe o desempenho de todos os funcionários</p>
+          </div>
         </div>
+        
+        <DateRangeFilter dateRange={dateRange} onDateRangeChange={setDateRange} />
       </div>
 
       {/* Summary Cards */}
