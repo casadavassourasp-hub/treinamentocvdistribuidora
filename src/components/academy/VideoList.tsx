@@ -31,10 +31,16 @@ export function VideoList({ videos, getSectorName, onEdit, onDelete }: VideoList
           return a.title.localeCompare(b.title);
         case 'title-desc':
           return b.title.localeCompare(a.title);
-        case 'date-asc':
-          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-        case 'date-desc':
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        case 'date-asc': {
+          const dateA = a.published_at || a.created_at;
+          const dateB = b.published_at || b.created_at;
+          return new Date(dateA).getTime() - new Date(dateB).getTime();
+        }
+        case 'date-desc': {
+          const dateA = a.published_at || a.created_at;
+          const dateB = b.published_at || b.created_at;
+          return new Date(dateB).getTime() - new Date(dateA).getTime();
+        }
         case 'sector-asc':
           return getSectorName(a.sector_id).localeCompare(getSectorName(b.sector_id));
         case 'sector-desc':
