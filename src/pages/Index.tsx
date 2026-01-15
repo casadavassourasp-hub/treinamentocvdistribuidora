@@ -15,6 +15,7 @@ import { useVideoProgress } from '@/hooks/useVideoProgress';
 import { useGamification } from '@/hooks/useGamification';
 import { Video } from '@/types/academy';
 import { BookOpen, Settings, Loader2 } from 'lucide-react';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -119,9 +120,12 @@ const Index = () => {
 
       <main className="flex-1 flex flex-col">
         <header className="bg-card border-b border-border px-6 py-4">
-          <div className="flex items-center gap-3">
-            <PageIcon className="w-6 h-6 text-primary" />
-            <h2 className="text-xl font-bold text-card-foreground">{pageTitle}</h2>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <PageIcon className="w-6 h-6 text-primary" />
+              <h2 className="text-xl font-bold text-card-foreground">{pageTitle}</h2>
+            </div>
+            <ThemeToggle />
           </div>
         </header>
 

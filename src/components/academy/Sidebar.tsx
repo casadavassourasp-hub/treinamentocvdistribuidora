@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { User, Settings, LogOut, FolderOpen, ChevronDown, ChevronRight, Users, PanelLeftClose, PanelLeft, PlayCircle, Moon, Sun } from 'lucide-react';
-import { useTheme } from 'next-themes';
+import { User, Settings, LogOut, FolderOpen, ChevronDown, ChevronRight, Users, PanelLeftClose, PanelLeft, PlayCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sector, ViewMode, Video } from '@/types/academy';
 import { Employee } from '@/hooks/useAcademy';
@@ -44,11 +43,6 @@ export function Sidebar({
   const [sectorsOpen, setSectorsOpen] = useState(true);
   const [employeesOpen, setEmployeesOpen] = useState(false);
   const [openSectorIds, setOpenSectorIds] = useState<Set<string>>(new Set());
-  const { theme, setTheme } = useTheme();
-
-  const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
-  };
 
   // Get videos for a specific sector, sorted by published_at (oldest first)
   const getVideosForSector = (sectorId: string) => {
@@ -267,25 +261,6 @@ export function Sidebar({
               {userName}
             </p>
           )}
-          
-          {/* Theme Toggle */}
-          <Button 
-            variant="sidebar" 
-            onClick={toggleTheme} 
-            className="h-10 text-sm"
-          >
-            {theme === 'dark' ? (
-              <>
-                <Sun className="w-4 h-4 mr-2 transition-transform duration-200 group-hover:scale-110" />
-                Tema Claro
-              </>
-            ) : (
-              <>
-                <Moon className="w-4 h-4 mr-2 transition-transform duration-200 group-hover:scale-110" />
-                Tema Escuro
-              </>
-            )}
-          </Button>
           
           <Button variant="sidebar" onClick={onLogout} className="h-10 text-sm hover:bg-destructive/10 hover:text-destructive">
             <LogOut className="w-4 h-4 mr-2 transition-transform duration-200 group-hover:scale-110" />
