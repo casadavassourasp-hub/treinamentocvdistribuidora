@@ -90,20 +90,19 @@ export function Sidebar({
           collapsed ? 'w-0 p-0 overflow-hidden opacity-0' : 'w-64 opacity-100'
         }`}
       >
-        <div className="flex items-start gap-2 mb-8 mt-2">
-          {/* Collapse button - next to logo */}
-          <button
-            onClick={() => onCollapsedChange(true)}
-            className="p-1.5 rounded-lg text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-all duration-200 mt-1"
-            title="Fechar menu"
-          >
-            <PanelLeftClose className="w-4 h-4" />
-          </button>
-          
-          <div className="flex flex-col items-center gap-2 flex-1">
+        <div className="flex flex-col items-center gap-2 mb-8 mt-2">
+          <div className="relative">
             <img src={logoCV} alt="CV Distribuidora" className="h-12 w-auto" />
-            <h1 className="text-lg font-bold text-center leading-tight">Treinamento CV Distribuidora</h1>
+            {/* Collapse button - bottom right of logo */}
+            <button
+              onClick={() => onCollapsedChange(true)}
+              className="absolute -bottom-1 -right-6 p-1 rounded-lg text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-all duration-200"
+              title="Fechar menu"
+            >
+              <PanelLeftClose className="w-4 h-4" />
+            </button>
           </div>
+          <h1 className="text-lg font-bold text-center leading-tight">Treinamento CV Distribuidora</h1>
         </div>
 
         <div className="space-y-2 mb-8">
