@@ -90,10 +90,10 @@ export function Sidebar({
           collapsed ? 'w-0 p-0 overflow-hidden opacity-0' : 'w-64 opacity-100'
         }`}
       >
-        {/* Collapse button - left side */}
+        {/* Collapse button - right side */}
         <button
           onClick={() => onCollapsedChange(true)}
-          className="absolute left-2 top-2 p-1.5 rounded-lg text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-all duration-200"
+          className="absolute right-2 top-2 p-1.5 rounded-lg text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-all duration-200"
           title="Fechar menu"
         >
           <PanelLeftClose className="w-4 h-4" />
