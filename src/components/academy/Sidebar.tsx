@@ -77,12 +77,21 @@ export function Sidebar({
     <>
       {/* Toggle button when collapsed */}
       {collapsed && (
-        <button
-          onClick={() => onCollapsedChange(false)}
-          className="fixed left-0 top-4 z-50 bg-sidebar text-sidebar-foreground p-2 rounded-r-lg shadow-lg hover:bg-sidebar-accent/50 transition-all duration-200"
-        >
-          <PanelLeft className="w-5 h-5" />
-        </button>
+        <TooltipProvider delayDuration={200}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => onCollapsedChange(false)}
+                className="fixed left-0 top-4 z-50 bg-sidebar text-sidebar-foreground p-2 rounded-r-lg shadow-lg hover:bg-sidebar-accent/50 transition-all duration-200 hover:scale-105"
+              >
+                <PanelLeft className="w-5 h-5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right" className="animate-scale-in">
+              <p>Abrir menu</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       )}
 
       {/* Sidebar */}
