@@ -91,15 +91,15 @@ export function Sidebar({
         }`}
       >
         <div className="flex flex-col items-center gap-2 mb-8 mt-2">
-          <div className="relative">
+          <div className="flex items-center gap-3 w-full justify-center">
             <img src={logoCV} alt="CV Distribuidora" className="h-12 w-auto" />
-            {/* Collapse button - bottom right of logo */}
+            {/* Collapse button - right of logo */}
             <button
               onClick={() => onCollapsedChange(true)}
-              className="absolute -bottom-1 -right-6 p-1 rounded-lg text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-all duration-200"
+              className="p-2 rounded-lg bg-sidebar-accent/30 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all duration-200 shadow-sm"
               title="Fechar menu"
             >
-              <PanelLeftClose className="w-4 h-4" />
+              <PanelLeftClose className="w-5 h-5" />
             </button>
           </div>
           <h1 className="text-lg font-bold text-center leading-tight">Treinamento CV Distribuidora</h1>
