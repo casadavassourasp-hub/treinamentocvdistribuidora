@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { User, Settings, LogOut, FolderOpen, ChevronDown, ChevronRight, Users, PanelLeftClose, PanelLeft, PlayCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Sector, ViewMode, Video } from '@/types/academy';
 import { Employee } from '@/hooks/useAcademy';
 import logoCV from '@/assets/logo-cv-distribuidora.png';
@@ -94,13 +95,21 @@ export function Sidebar({
           <div className="flex items-center gap-3 w-full justify-center">
             <img src={logoCV} alt="CV Distribuidora" className="h-12 w-auto" />
             {/* Collapse button - right of logo */}
-            <button
-              onClick={() => onCollapsedChange(true)}
-              className="p-2 rounded-lg bg-sidebar-accent/30 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all duration-200 shadow-sm"
-              title="Fechar menu"
-            >
-              <PanelLeftClose className="w-5 h-5" />
-            </button>
+            <TooltipProvider delayDuration={200}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => onCollapsedChange(true)}
+                    className="p-2 rounded-lg bg-sidebar-accent/30 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all duration-200 shadow-sm hover:scale-105"
+                  >
+                    <PanelLeftClose className="w-5 h-5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="animate-scale-in">
+                  <p>Fechar menu</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
           <h1 className="text-lg font-bold text-center leading-tight">Treinamento CV Distribuidora</h1>
         </div>
