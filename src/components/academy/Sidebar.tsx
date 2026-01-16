@@ -75,57 +75,35 @@ export function Sidebar({
 
   return (
     <>
-      {/* Toggle button when collapsed */}
-      {collapsed && (
-        <TooltipProvider delayDuration={200}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => onCollapsedChange(false)}
-                className="fixed left-0 top-4 z-50 bg-sidebar text-sidebar-foreground p-2 rounded-r-lg shadow-lg hover:bg-sidebar-accent/50 transition-all duration-200 hover:scale-105"
-              >
-                <PanelLeft className="w-5 h-5" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right" className="animate-scale-in">
-              <p>Abrir menu</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      )}
+      {/* Toggle button when collapsed - always visible on left edge */}
+      <button
+        onClick={() => onCollapsedChange(!collapsed)}
+        className={`fixed top-4 z-50 bg-sidebar text-sidebar-foreground p-2.5 rounded-r-lg shadow-lg hover:bg-sidebar-accent transition-all duration-300 ease-out ${
+          collapsed ? 'left-0' : 'left-64'
+        }`}
+        title={collapsed ? 'Abrir menu' : 'Fechar menu'}
+      >
+        {collapsed ? (
+          <PanelLeft className="w-5 h-5" />
+        ) : (
+          <PanelLeftClose className="w-5 h-5" />
+        )}
+      </button>
 
       {/* Sidebar */}
       <aside 
-        className={`bg-sidebar text-sidebar-foreground flex flex-col min-h-screen transition-all duration-300 ease-out transform ${
+        className={`bg-sidebar text-sidebar-foreground flex flex-col min-h-screen transition-all duration-300 ease-out ${
           collapsed 
-            ? '-translate-x-full w-0 p-0 overflow-hidden opacity-0' 
-            : 'translate-x-0 w-64 p-5 opacity-100'
+            ? 'w-0 overflow-hidden' 
+            : 'w-64'
         }`}
       >
-        <div className="flex flex-col items-center gap-2 mb-8 mt-2">
-          <div className="flex items-center gap-3 w-full justify-center">
-            <img src={logoCV} alt="CV Distribuidora" className="h-12 w-auto" />
-            {/* Collapse button - right of logo */}
-            <TooltipProvider delayDuration={200}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={() => onCollapsedChange(true)}
-                    className="p-2 rounded-lg bg-sidebar-accent/30 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all duration-200 shadow-sm hover:scale-105"
-                  >
-                    <PanelLeftClose className="w-5 h-5" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="right" className="animate-scale-in">
-                  <p>Fechar menu</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
+        <div className={`flex flex-col items-center gap-2 mb-8 mt-2 p-5 transition-opacity duration-200 ${collapsed ? 'opacity-0' : 'opacity-100'}`}>
+          <img src={logoCV} alt="CV Distribuidora" className="h-12 w-auto" />
           <h1 className="text-lg font-bold text-center leading-tight">Treinamento CV Distribuidora</h1>
         </div>
 
-        <div className="space-y-2 mb-8">
+        <div className={`space-y-2 mb-8 px-5 transition-opacity duration-200 ${collapsed ? 'opacity-0' : 'opacity-100'}`}>
           <Button 
             variant={viewMode === 'employee' ? 'sidebar-active' : 'sidebar'} 
             onClick={() => onViewModeChange('employee')} 
@@ -148,7 +126,7 @@ export function Sidebar({
 
         {/* Admin folders - only shown for admin mode */}
         {viewMode === 'admin' && (
-          <div className="flex-1 space-y-2">
+          <div className={`flex-1 space-y-2 px-5 transition-opacity duration-200 ${collapsed ? 'opacity-0' : 'opacity-100'}`}>
             {/* Collapsible Sectors Folder */}
             <div>
               <button
@@ -276,7 +254,7 @@ export function Sidebar({
         {/* Spacer for employee mode */}
         {viewMode === 'employee' && <div className="flex-1" />}
 
-        <div className="pt-4 border-t border-sidebar-border mt-4 space-y-3">
+        <div className={`pt-4 border-t border-sidebar-border mt-4 space-y-3 px-5 transition-opacity duration-200 ${collapsed ? 'opacity-0' : 'opacity-100'}`}>
           {userName && (
             <p className="text-xs text-sidebar-muted text-center truncate">
               {userName}
