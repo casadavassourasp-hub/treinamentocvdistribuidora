@@ -96,8 +96,10 @@ export function Sidebar({
 
       {/* Sidebar */}
       <aside 
-        className={`bg-sidebar text-sidebar-foreground p-5 flex flex-col min-h-screen transition-all duration-300 ease-in-out ${
-          collapsed ? 'w-0 p-0 overflow-hidden opacity-0' : 'w-64 opacity-100'
+        className={`bg-sidebar text-sidebar-foreground flex flex-col min-h-screen transition-all duration-300 ease-out transform ${
+          collapsed 
+            ? '-translate-x-full w-0 p-0 overflow-hidden opacity-0' 
+            : 'translate-x-0 w-64 p-5 opacity-100'
         }`}
       >
         <div className="flex flex-col items-center gap-2 mb-8 mt-2">
