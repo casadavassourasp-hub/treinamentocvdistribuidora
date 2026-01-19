@@ -75,20 +75,28 @@ export function Sidebar({
 
   return (
     <>
-      {/* Toggle button when collapsed - always visible on left edge */}
-      <button
-        onClick={() => onCollapsedChange(!collapsed)}
-        className={`fixed top-4 z-50 bg-sidebar text-sidebar-foreground p-2.5 rounded-r-lg shadow-lg hover:bg-sidebar-accent transition-all duration-300 ease-out ${
-          collapsed ? 'left-0' : 'left-64'
-        }`}
-        title={collapsed ? 'Abrir menu' : 'Fechar menu'}
-      >
-        {collapsed ? (
-          <PanelLeft className="w-5 h-5" />
-        ) : (
-          <PanelLeftClose className="w-5 h-5" />
-        )}
-      </button>
+      {/* Toggle button - positioned at the bottom of header area */}
+      <TooltipProvider delayDuration={200}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={() => onCollapsedChange(!collapsed)}
+              className={`fixed z-50 bg-sidebar text-sidebar-foreground p-2 rounded-r-lg shadow-lg hover:bg-sidebar-accent transition-all duration-300 ease-out hover:scale-105 ${
+                collapsed ? 'left-0 top-4' : 'left-[248px] top-20'
+              }`}
+            >
+              {collapsed ? (
+                <PanelLeft className="w-5 h-5" />
+              ) : (
+                <PanelLeftClose className="w-5 h-5" />
+              )}
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="right" className="animate-scale-in">
+            <p>{collapsed ? 'Abrir menu' : 'Fechar menu'}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
       {/* Sidebar */}
       <aside 
@@ -98,7 +106,7 @@ export function Sidebar({
             : 'w-64'
         }`}
       >
-        <div className={`flex flex-col items-center gap-2 mb-8 mt-2 p-5 transition-opacity duration-200 ${collapsed ? 'opacity-0' : 'opacity-100'}`}>
+        <div className={`flex flex-col items-center gap-2 mb-4 mt-2 p-5 transition-opacity duration-200 ${collapsed ? 'opacity-0' : 'opacity-100'}`}>
           <img src={logoCV} alt="CV Distribuidora" className="h-12 w-auto" />
           <h1 className="text-lg font-bold text-center leading-tight">Treinamento CV Distribuidora</h1>
         </div>
