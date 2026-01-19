@@ -118,20 +118,20 @@ const Index = () => {
         onLogout={handleLogout}
       />
 
-      <main className="flex-1 flex flex-col">
-        <header className="bg-card border-b border-border px-6 py-4">
+      <main className="flex-1 flex flex-col min-w-0">
+        <header className="bg-card border-b border-border px-4 md:px-6 py-3 md:py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <PageIcon className="w-6 h-6 text-primary" />
-              <h2 className="text-xl font-bold text-card-foreground">{pageTitle}</h2>
+            <div className="flex items-center gap-2 md:gap-3 ml-12 md:ml-0">
+              <PageIcon className="w-5 h-5 md:w-6 md:h-6 text-primary" />
+              <h2 className="text-lg md:text-xl font-bold text-card-foreground truncate">{pageTitle}</h2>
             </div>
             <ThemeToggle />
           </div>
         </header>
 
-        <section className="flex-1 p-6 overflow-y-auto">
+        <section className="flex-1 p-4 md:p-6 overflow-y-auto">
           {viewMode === 'employee' ? (
-            <div className="space-y-6">
+            <div className="space-y-4 md:space-y-6">
               {/* User Stats */}
               <UserStatsCard 
                 userPoints={userPoints} 
@@ -154,7 +154,7 @@ const Index = () => {
                 onSectorSelect={setSelectedSectorId}
               />
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                 {/* Videos Grid */}
                 <div className="lg:col-span-2">
                   <VideoGrid

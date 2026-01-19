@@ -55,22 +55,22 @@ export function AchievementBadges({ achievements, unlockedIds, loading }: Achiev
   const unlockedCount = achievements.filter((a) => unlockedIds.has(a.id)).length;
 
   return (
-    <div className="bg-card rounded-xl p-5 shadow-card">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-            <Award className="w-5 h-5 text-primary" />
+    <div className="bg-card rounded-xl p-4 md:p-5 shadow-card">
+      <div className="flex items-center justify-between mb-3 md:mb-4">
+        <div className="flex items-center gap-2 md:gap-3">
+          <div className="w-8 h-8 md:w-10 md:h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+            <Award className="w-4 h-4 md:w-5 md:h-5 text-primary" />
           </div>
           <div>
-            <h3 className="font-semibold text-card-foreground">Conquistas</h3>
-            <p className="text-xs text-muted-foreground">
+            <h3 className="text-sm md:text-base font-semibold text-card-foreground">Conquistas</h3>
+            <p className="text-[10px] md:text-xs text-muted-foreground">
               {unlockedCount} de {achievements.length} desbloqueadas
             </p>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-4 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 md:gap-3">
         {achievements.map((achievement) => {
           const isUnlocked = unlockedIds.has(achievement.id);
           const IconComponent = iconMap[achievement.icon] || Award;
@@ -79,7 +79,7 @@ export function AchievementBadges({ achievements, unlockedIds, loading }: Achiev
           return (
             <div
               key={achievement.id}
-              className={`relative flex flex-col items-center p-3 rounded-lg border transition-all ${
+              className={`relative flex flex-col items-center p-2 md:p-3 rounded-lg border transition-all ${
                 isUnlocked 
                   ? colorClass 
                   : 'bg-muted/50 text-muted-foreground border-border opacity-50'
@@ -88,11 +88,11 @@ export function AchievementBadges({ achievements, unlockedIds, loading }: Achiev
             >
               {!isUnlocked && (
                 <div className="absolute inset-0 flex items-center justify-center bg-background/50 rounded-lg">
-                  <Lock className="w-4 h-4 text-muted-foreground" />
+                  <Lock className="w-3 h-3 md:w-4 md:h-4 text-muted-foreground" />
                 </div>
               )}
-              <IconComponent className="w-6 h-6 mb-1" />
-              <span className="text-[10px] font-medium text-center leading-tight">
+              <IconComponent className="w-5 h-5 md:w-6 md:h-6 mb-1" />
+              <span className="text-[8px] md:text-[10px] font-medium text-center leading-tight line-clamp-2">
                 {achievement.name}
               </span>
             </div>

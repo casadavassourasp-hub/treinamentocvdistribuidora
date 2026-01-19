@@ -30,20 +30,20 @@ export function VideoGrid({
     <div className="space-y-6">
       {/* Progress Summary */}
       {totalCount > 0 && (
-        <div className="bg-card rounded-xl p-5 shadow-card">
+        <div className="bg-card rounded-xl p-4 md:p-5 shadow-card">
           <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-primary" />
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className="w-8 h-8 md:w-10 md:h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-primary" />
               </div>
               <div>
-                <p className="font-semibold text-card-foreground">Seu Progresso</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm md:text-base font-semibold text-card-foreground">Seu Progresso</p>
+                <p className="text-xs md:text-sm text-muted-foreground">
                   {watchedCount} de {totalCount} treinamentos concluídos
                 </p>
               </div>
             </div>
-            <span className="text-2xl font-bold text-primary">{progressPercentage}%</span>
+            <span className="text-xl md:text-2xl font-bold text-primary">{progressPercentage}%</span>
           </div>
           <div className="w-full bg-muted rounded-full h-2.5">
             <div 
@@ -67,7 +67,7 @@ export function VideoGrid({
           />
         ) : (
           // Grid view when a specific sector is selected
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
             {videos.map((video, index) => (
               <div key={video.id} style={{ animationDelay: `${index * 50}ms` }}>
                 <VideoCard

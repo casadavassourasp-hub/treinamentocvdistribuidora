@@ -20,10 +20,10 @@ export function SectorFilter({
   };
 
   return (
-    <div className="bg-card rounded-xl p-5 shadow-card">
-      <div className="flex items-center gap-2 mb-4">
+    <div className="bg-card rounded-xl p-4 md:p-5 shadow-card">
+      <div className="flex items-center gap-2 mb-3 md:mb-4">
         <FolderOpen className="w-5 h-5 text-primary" />
-        <h3 className="font-semibold text-card-foreground">Filtrar por Setor</h3>
+        <h3 className="text-sm md:text-base font-semibold text-card-foreground">Filtrar por Setor</h3>
       </div>
       
       <div className="flex flex-wrap gap-2">
@@ -32,14 +32,14 @@ export function SectorFilter({
           <button 
             key={sector.id} 
             onClick={() => onSectorSelect(sector.id)} 
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-all duration-200 ${
+            className={`flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm transition-all duration-200 ${
               selectedSectorId === sector.id 
                 ? 'bg-primary text-primary-foreground font-medium shadow-md' 
                 : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
             }`}
           >
             {selectedSectorId === sector.id && <Check className="w-4 h-4" />}
-            <span className="truncate max-w-[150px]">{sector.name}</span>
+            <span className="truncate max-w-[100px] md:max-w-[150px]">{sector.name}</span>
             <span className={`text-xs px-1.5 py-0.5 rounded-full ${
               selectedSectorId === sector.id 
                 ? 'bg-primary-foreground/20 text-primary-foreground' 
