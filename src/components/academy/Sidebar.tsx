@@ -82,7 +82,7 @@ export function Sidebar({
             <button
               onClick={() => onCollapsedChange(!collapsed)}
               className={`fixed z-50 bg-sidebar text-sidebar-foreground p-2 rounded-r-lg shadow-lg hover:bg-sidebar-accent transition-all duration-300 ease-out hover:scale-105 ${
-                collapsed ? 'left-0 top-4' : 'left-[248px] top-20'
+                collapsed ? 'left-0 top-1/2 -translate-y-1/2' : 'left-[248px] top-20'
               }`}
             >
               {collapsed ? (
