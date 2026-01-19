@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { User, Settings, LogOut, FolderOpen, ChevronDown, ChevronRight, Users, PanelLeftClose, PanelLeft, PlayCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { User, Settings, LogOut, FolderOpen, ChevronDown, ChevronRight, Users, PanelLeftClose, PanelLeft, PlayCircle, X, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Sector, ViewMode, Video } from '@/types/academy';
 import { Employee } from '@/hooks/useAcademy';
+import { useIsMobile } from '@/hooks/use-mobile';
 import logoCV from '@/assets/logo-cv-distribuidora.png';
 
 export type AdminSection = 'sectors' | 'videos' | 'users' | null;
@@ -44,6 +45,14 @@ export function Sidebar({
   const [sectorsOpen, setSectorsOpen] = useState(true);
   const [employeesOpen, setEmployeesOpen] = useState(false);
   const [openSectorIds, setOpenSectorIds] = useState<Set<string>>(new Set());
+  const isMobile = useIsMobile();
+
+  // Auto-collapse sidebar on mobile
+  useEffect(() => {
+    if (isMobile) {
+      onCollapsedChange(true);
+    }
+  }, [isMobile]);
 
   // Get videos for a specific sector, sorted by published_at (oldest first)
   const getVideosForSector = (sectorId: string) => {
@@ -73,22 +82,44 @@ export function Sidebar({
   // Filter only employees (not admins)
   const employeeList = employees.filter(e => e.role === 'employee');
 
+  // Close sidebar when clicking on a navigation item on mobile
+  const handleMobileNavigation = (action: () => void) => {
+    action();
+    if (isMobile) {
+      onCollapsedChange(true);
+    }
+  };
+
   return (
     <>
-      {/* Toggle button - positioned at the bottom of header area */}
+      {/* Mobile overlay */}
+      {isMobile && !collapsed && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 transition-opacity duration-300"
+          onClick={() => onCollapsedChange(true)}
+        />
+      )}
+
+      {/* Toggle button */}
       <TooltipProvider delayDuration={200}>
         <Tooltip>
           <TooltipTrigger asChild>
             <button
               onClick={() => onCollapsedChange(!collapsed)}
-              className={`fixed z-50 bg-sidebar text-sidebar-foreground p-2 rounded-r-lg shadow-lg hover:bg-sidebar-accent transition-all duration-300 ease-out hover:scale-105 ${
-                collapsed ? 'left-0 top-1/2 -translate-y-1/2' : 'left-[248px] top-20'
+              className={`fixed z-50 p-2.5 rounded-lg shadow-lg transition-all duration-300 ease-out hover:scale-105 ${
+                isMobile 
+                  ? collapsed 
+                    ? 'left-4 top-4 bg-primary text-primary-foreground' 
+                    : 'left-[216px] top-4 bg-sidebar text-sidebar-foreground'
+                  : collapsed 
+                    ? 'left-0 top-1/2 -translate-y-1/2 bg-sidebar text-sidebar-foreground rounded-l-none'
+                    : 'left-[248px] top-20 bg-sidebar text-sidebar-foreground rounded-l-none'
               }`}
             >
-              {collapsed ? (
-                <PanelLeft className="w-5 h-5" />
+              {isMobile ? (
+                collapsed ? <Menu className="w-5 h-5" /> : <X className="w-5 h-5" />
               ) : (
-                <PanelLeftClose className="w-5 h-5" />
+                collapsed ? <PanelLeft className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />
               )}
             </button>
           </TooltipTrigger>
@@ -101,20 +132,22 @@ export function Sidebar({
       {/* Sidebar */}
       <aside 
         className={`bg-sidebar text-sidebar-foreground flex flex-col min-h-screen transition-all duration-300 ease-out ${
-          collapsed 
-            ? 'w-0 overflow-hidden' 
-            : 'w-64'
+          isMobile 
+            ? `fixed top-0 left-0 h-full z-50 w-64 ${collapsed ? '-translate-x-full' : 'translate-x-0'}`
+            : collapsed 
+              ? 'w-0 overflow-hidden' 
+              : 'w-64'
         }`}
       >
-        <div className={`flex flex-col items-center gap-2 mb-4 mt-2 p-5 transition-opacity duration-200 ${collapsed ? 'opacity-0' : 'opacity-100'}`}>
-          <img src={logoCV} alt="CV Distribuidora" className="h-12 w-auto" />
-          <h1 className="text-lg font-bold text-center leading-tight">Treinamento CV Distribuidora</h1>
+        <div className={`flex flex-col items-center gap-2 mb-4 mt-2 p-5 transition-opacity duration-200 ${collapsed && !isMobile ? 'opacity-0' : 'opacity-100'}`}>
+          <img src={logoCV} alt="CV Distribuidora" className="h-10 md:h-12 w-auto" />
+          <h1 className="text-base md:text-lg font-bold text-center leading-tight">Treinamento CV Distribuidora</h1>
         </div>
 
-        <div className={`space-y-2 mb-8 px-5 transition-opacity duration-200 ${collapsed ? 'opacity-0' : 'opacity-100'}`}>
+        <div className={`space-y-2 mb-8 px-5 transition-opacity duration-200 ${collapsed && !isMobile ? 'opacity-0' : 'opacity-100'}`}>
           <Button 
             variant={viewMode === 'employee' ? 'sidebar-active' : 'sidebar'} 
-            onClick={() => onViewModeChange('employee')} 
+            onClick={() => handleMobileNavigation(() => onViewModeChange('employee'))} 
             className="h-11"
           >
             <User className="w-5 h-5 mr-2 transition-transform duration-200 group-hover:scale-110" />
@@ -123,7 +156,7 @@ export function Sidebar({
           {isAdmin && (
             <Button 
               variant={viewMode === 'admin' ? 'sidebar-active' : 'sidebar'} 
-              onClick={() => onViewModeChange('admin')} 
+              onClick={() => handleMobileNavigation(() => onViewModeChange('admin'))} 
               className="h-11"
             >
               <Settings className="w-5 h-5 mr-2 transition-transform duration-200 group-hover:scale-110" />
@@ -134,7 +167,7 @@ export function Sidebar({
 
         {/* Admin folders - only shown for admin mode */}
         {viewMode === 'admin' && (
-          <div className={`flex-1 space-y-2 px-5 transition-opacity duration-200 ${collapsed ? 'opacity-0' : 'opacity-100'}`}>
+          <div className={`flex-1 space-y-2 px-5 overflow-y-auto transition-opacity duration-200 ${collapsed && !isMobile ? 'opacity-0' : 'opacity-100'}`}>
             {/* Collapsible Sectors Folder */}
             <div>
               <button
@@ -244,7 +277,7 @@ export function Sidebar({
                   employeeList.map(employee => (
                     <button 
                       key={employee.id}
-                      onClick={() => onEmployeeSelect?.(employee)}
+                      onClick={() => handleMobileNavigation(() => onEmployeeSelect?.(employee))}
                       className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-all duration-200 text-left"
                     >
                       <User className="w-3 h-3 text-sidebar-muted flex-shrink-0" />
@@ -262,7 +295,7 @@ export function Sidebar({
         {/* Spacer for employee mode */}
         {viewMode === 'employee' && <div className="flex-1" />}
 
-        <div className={`pt-4 border-t border-sidebar-border mt-4 space-y-3 px-5 transition-opacity duration-200 ${collapsed ? 'opacity-0' : 'opacity-100'}`}>
+        <div className={`pt-4 border-t border-sidebar-border mt-4 space-y-3 px-5 pb-5 transition-opacity duration-200 ${collapsed && !isMobile ? 'opacity-0' : 'opacity-100'}`}>
           {userName && (
             <p className="text-xs text-sidebar-muted text-center truncate">
               {userName}

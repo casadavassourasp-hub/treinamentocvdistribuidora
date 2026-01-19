@@ -50,22 +50,22 @@ export function UserStatsCard({ userPoints, userRank, loading }: UserStatsCardPr
   ];
 
   return (
-    <div className="bg-card rounded-xl p-5 shadow-card">
-      <h3 className="font-semibold text-card-foreground mb-4">Suas Estatísticas</h3>
+    <div className="bg-card rounded-xl p-4 md:p-5 shadow-card">
+      <h3 className="text-sm md:text-base font-semibold text-card-foreground mb-3 md:mb-4">Suas Estatísticas</h3>
       
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 md:gap-3">
         {stats.map((stat) => (
           <div
             key={stat.label}
-            className={`flex flex-col items-center p-3 rounded-lg ${stat.bgColor}`}
+            className={`flex flex-col items-center p-2 md:p-3 rounded-lg ${stat.bgColor}`}
           >
-            <stat.icon className={`w-5 h-5 ${stat.color} mb-1`} />
-            <span className={`text-xl font-bold ${stat.color}`}>
+            <stat.icon className={`w-4 h-4 md:w-5 md:h-5 ${stat.color} mb-1`} />
+            <span className={`text-lg md:text-xl font-bold ${stat.color}`}>
               {stat.prefix}
               {stat.value}
               {stat.suffix}
             </span>
-            <span className="text-xs text-muted-foreground">{stat.label}</span>
+            <span className="text-[10px] md:text-xs text-muted-foreground">{stat.label}</span>
           </div>
         ))}
       </div>

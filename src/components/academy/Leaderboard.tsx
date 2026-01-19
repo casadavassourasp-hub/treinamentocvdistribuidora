@@ -72,20 +72,20 @@ export function Leaderboard({ entries, sectorEntries, sectors, loading, onSector
   }
 
   return (
-    <div className="bg-card rounded-xl p-5 shadow-card">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-            <Trophy className="w-5 h-5 text-primary" />
+    <div className="bg-card rounded-xl p-4 md:p-5 shadow-card">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+        <div className="flex items-center gap-2 md:gap-3">
+          <div className="w-8 h-8 md:w-10 md:h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+            <Trophy className="w-4 h-4 md:w-5 md:h-5 text-primary" />
           </div>
           <div>
-            <h3 className="font-semibold text-card-foreground">Ranking</h3>
-            <p className="text-xs text-muted-foreground">Top 10 funcionários</p>
+            <h3 className="text-sm md:text-base font-semibold text-card-foreground">Ranking</h3>
+            <p className="text-[10px] md:text-xs text-muted-foreground">Top 10 funcionários</p>
           </div>
         </div>
 
         <Select value={selectedSector} onValueChange={handleSectorChange}>
-          <SelectTrigger className="w-36 h-8 text-xs">
+          <SelectTrigger className="w-full sm:w-36 h-8 text-xs">
             <Filter className="w-3 h-3 mr-1" />
             <SelectValue placeholder="Filtrar" />
           </SelectTrigger>
@@ -115,16 +115,16 @@ export function Leaderboard({ entries, sectorEntries, sectors, loading, onSector
             return (
               <div
                 key={entry.user_id}
-                className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${getRankBg(entry.rank, isCurrentUser)}`}
+                className={`flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-lg border transition-all ${getRankBg(entry.rank, isCurrentUser)}`}
               >
-                <div className="w-8 flex justify-center">{getRankIcon(entry.rank)}</div>
+                <div className="w-6 md:w-8 flex justify-center">{getRankIcon(entry.rank)}</div>
 
-                <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
-                  <User className="w-4 h-4 text-muted-foreground" />
+                <div className="w-6 h-6 md:w-8 md:h-8 bg-muted rounded-full flex items-center justify-center flex-shrink-0">
+                  <User className="w-3 h-3 md:w-4 md:h-4 text-muted-foreground" />
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm text-card-foreground truncate">
+                  <p className="font-medium text-xs md:text-sm text-card-foreground truncate">
                     {displayName}
                     {isCurrentUser && <span className="text-primary ml-1">(você)</span>}
                   </p>
