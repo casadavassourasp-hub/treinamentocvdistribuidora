@@ -106,11 +106,11 @@ export function Sidebar({
           <TooltipTrigger asChild>
             <button
               onClick={() => onCollapsedChange(!collapsed)}
-              className={`fixed z-50 p-2.5 rounded-lg shadow-lg transition-all duration-300 ease-out hover:scale-105 ${
+              className={`fixed z-[60] p-2 md:p-2.5 rounded-lg shadow-lg transition-all duration-300 ease-out hover:scale-105 active:scale-95 ${
                 isMobile 
                   ? collapsed 
-                    ? 'left-4 top-4 bg-primary text-primary-foreground' 
-                    : 'left-[216px] top-4 bg-sidebar text-sidebar-foreground'
+                    ? 'left-3 top-3 bg-primary text-primary-foreground shadow-xl' 
+                    : 'left-[200px] top-3 bg-card text-card-foreground border border-border'
                   : collapsed 
                     ? 'left-0 top-1/2 -translate-y-1/2 bg-sidebar text-sidebar-foreground rounded-l-none'
                     : 'left-[248px] top-20 bg-sidebar text-sidebar-foreground rounded-l-none'
@@ -123,7 +123,7 @@ export function Sidebar({
               )}
             </button>
           </TooltipTrigger>
-          <TooltipContent side="right" className="animate-scale-in">
+          <TooltipContent side="right" className="animate-scale-in hidden md:block">
             <p>{collapsed ? 'Abrir menu' : 'Fechar menu'}</p>
           </TooltipContent>
         </Tooltip>
@@ -133,41 +133,41 @@ export function Sidebar({
       <aside 
         className={`bg-sidebar text-sidebar-foreground flex flex-col min-h-screen transition-all duration-300 ease-out ${
           isMobile 
-            ? `fixed top-0 left-0 h-full z-50 w-64 ${collapsed ? '-translate-x-full' : 'translate-x-0'}`
+            ? `fixed top-0 left-0 h-full z-50 w-56 ${collapsed ? '-translate-x-full' : 'translate-x-0'} shadow-2xl`
             : collapsed 
               ? 'w-0 overflow-hidden' 
               : 'w-64'
         }`}
       >
-        <div className={`flex flex-col items-center gap-2 mb-4 mt-2 p-5 transition-opacity duration-200 ${collapsed && !isMobile ? 'opacity-0' : 'opacity-100'}`}>
-          <img src={logoCV} alt="CV Distribuidora" className="h-10 md:h-12 w-auto" />
-          <h1 className="text-base md:text-lg font-bold text-center leading-tight">Treinamento CV Distribuidora</h1>
+        <div className={`flex flex-col items-center gap-1.5 md:gap-2 mb-3 md:mb-4 mt-2 p-4 md:p-5 transition-opacity duration-200 ${collapsed && !isMobile ? 'opacity-0' : 'opacity-100'}`}>
+          <img src={logoCV} alt="CV Distribuidora" className="h-8 md:h-12 w-auto" />
+          <h1 className="text-sm md:text-lg font-bold text-center leading-tight">Treinamento CV</h1>
         </div>
 
-        <div className={`space-y-2 mb-8 px-5 transition-opacity duration-200 ${collapsed && !isMobile ? 'opacity-0' : 'opacity-100'}`}>
+        <div className={`space-y-1.5 md:space-y-2 mb-6 md:mb-8 px-4 md:px-5 transition-opacity duration-200 ${collapsed && !isMobile ? 'opacity-0' : 'opacity-100'}`}>
           <Button 
             variant={viewMode === 'employee' ? 'sidebar-active' : 'sidebar'} 
             onClick={() => handleMobileNavigation(() => onViewModeChange('employee'))} 
-            className="h-11"
+            className="h-10 md:h-11 text-sm"
           >
-            <User className="w-5 h-5 mr-2 transition-transform duration-200 group-hover:scale-110" />
+            <User className="w-4 h-4 md:w-5 md:h-5 mr-2 transition-transform duration-200 group-hover:scale-110" />
             Funcionário
           </Button>
           {isAdmin && (
             <Button 
               variant={viewMode === 'admin' ? 'sidebar-active' : 'sidebar'} 
               onClick={() => handleMobileNavigation(() => onViewModeChange('admin'))} 
-              className="h-11"
+              className="h-10 md:h-11 text-sm"
             >
-              <Settings className="w-5 h-5 mr-2 transition-transform duration-200 group-hover:scale-110" />
+              <Settings className="w-4 h-4 md:w-5 md:h-5 mr-2 transition-transform duration-200 group-hover:scale-110" />
               Administrador
             </Button>
           )}
         </div>
 
-        {/* Admin folders - only shown for admin mode */}
         {viewMode === 'admin' && (
-          <div className={`flex-1 space-y-2 px-5 overflow-y-auto transition-opacity duration-200 ${collapsed && !isMobile ? 'opacity-0' : 'opacity-100'}`}>
+          <div className={`flex-1 space-y-1.5 md:space-y-2 px-4 md:px-5 overflow-y-auto transition-opacity duration-200 ${collapsed && !isMobile ? 'opacity-0' : 'opacity-100'}`}>
+            {/* Collapsible Sectors Folder */}
             {/* Collapsible Sectors Folder */}
             <div>
               <button
@@ -292,18 +292,17 @@ export function Sidebar({
           </div>
         )}
 
-        {/* Spacer for employee mode */}
         {viewMode === 'employee' && <div className="flex-1" />}
 
-        <div className={`pt-4 border-t border-sidebar-border mt-4 space-y-3 px-5 pb-5 transition-opacity duration-200 ${collapsed && !isMobile ? 'opacity-0' : 'opacity-100'}`}>
+        <div className={`pt-3 md:pt-4 border-t border-sidebar-border mt-3 md:mt-4 space-y-2 md:space-y-3 px-4 md:px-5 pb-4 md:pb-5 transition-opacity duration-200 ${collapsed && !isMobile ? 'opacity-0' : 'opacity-100'}`}>
           {userName && (
-            <p className="text-xs text-sidebar-muted text-center truncate">
+            <p className="text-[10px] md:text-xs text-sidebar-muted text-center truncate">
               {userName}
             </p>
           )}
           
-          <Button variant="sidebar" onClick={onLogout} className="h-10 text-sm hover:bg-destructive/10 hover:text-destructive">
-            <LogOut className="w-4 h-4 mr-2 transition-transform duration-200 group-hover:scale-110" />
+          <Button variant="sidebar" onClick={onLogout} className="h-9 md:h-10 text-xs md:text-sm hover:bg-destructive/10 hover:text-destructive">
+            <LogOut className="w-3.5 h-3.5 md:w-4 md:h-4 mr-2 transition-transform duration-200 group-hover:scale-110" />
             Sair
           </Button>
         </div>
