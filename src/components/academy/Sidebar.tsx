@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { User, Settings, LogOut, FolderOpen, ChevronDown, ChevronRight, Users, PanelLeftClose, PanelLeft, PlayCircle, X, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -26,6 +26,61 @@ interface SidebarProps {
   onLogout: () => void;
 }
 
+// Swipe detection hook
+function useSwipeGesture(
+  onSwipeLeft: () => void,
+  onSwipeRight: () => void,
+  enabled: boolean = true
+) {
+  const touchStartX = useRef<number>(0);
+  const touchStartY = useRef<number>(0);
+  const touchEndX = useRef<number>(0);
+
+  const minSwipeDistance = 50;
+
+  const onTouchStart = useCallback((e: TouchEvent) => {
+    touchStartX.current = e.targetTouches[0].clientX;
+    touchStartY.current = e.targetTouches[0].clientY;
+  }, []);
+
+  const onTouchMove = useCallback((e: TouchEvent) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  }, []);
+
+  const onTouchEnd = useCallback(() => {
+    if (!enabled) return;
+    
+    const deltaX = touchEndX.current - touchStartX.current;
+    const deltaY = Math.abs(touchStartY.current - (touchEndX.current ? touchEndX.current : touchStartX.current));
+    
+    // Only trigger if horizontal swipe is dominant
+    if (Math.abs(deltaX) > minSwipeDistance && Math.abs(deltaX) > deltaY) {
+      if (deltaX < 0) {
+        onSwipeLeft();
+      } else {
+        onSwipeRight();
+      }
+    }
+    
+    // Reset
+    touchEndX.current = 0;
+  }, [enabled, onSwipeLeft, onSwipeRight]);
+
+  useEffect(() => {
+    if (!enabled) return;
+    
+    document.addEventListener('touchstart', onTouchStart, { passive: true });
+    document.addEventListener('touchmove', onTouchMove, { passive: true });
+    document.addEventListener('touchend', onTouchEnd);
+
+    return () => {
+      document.removeEventListener('touchstart', onTouchStart);
+      document.removeEventListener('touchmove', onTouchMove);
+      document.removeEventListener('touchend', onTouchEnd);
+    };
+  }, [enabled, onTouchStart, onTouchMove, onTouchEnd]);
+}
+
 export function Sidebar({
   sectors,
   videos,
@@ -46,6 +101,13 @@ export function Sidebar({
   const [employeesOpen, setEmployeesOpen] = useState(false);
   const [openSectorIds, setOpenSectorIds] = useState<Set<string>>(new Set());
   const isMobile = useIsMobile();
+
+  // Swipe gestures for mobile
+  useSwipeGesture(
+    () => onCollapsedChange(true),  // Swipe left = close
+    () => onCollapsedChange(false), // Swipe right = open
+    isMobile
+  );
 
   // Auto-collapse sidebar on mobile
   useEffect(() => {
