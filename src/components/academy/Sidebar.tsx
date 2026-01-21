@@ -26,45 +26,77 @@ interface SidebarProps {
   onLogout: () => void;
 }
 
-// Swipe detection hook
+// Swipe detection hook with visual feedback
 function useSwipeGesture(
   onSwipeLeft: () => void,
   onSwipeRight: () => void,
-  enabled: boolean = true
+  enabled: boolean = true,
+  sidebarOpen: boolean = false
 ) {
   const touchStartX = useRef<number>(0);
   const touchStartY = useRef<number>(0);
-  const touchEndX = useRef<number>(0);
+  const [swipeProgress, setSwipeProgress] = useState<number>(0);
+  const [isSwipping, setIsSwipping] = useState(false);
 
   const minSwipeDistance = 50;
+  const edgeThreshold = 30; // Only detect swipe from edge when sidebar is closed
 
   const onTouchStart = useCallback((e: TouchEvent) => {
-    touchStartX.current = e.targetTouches[0].clientX;
+    const startX = e.targetTouches[0].clientX;
+    touchStartX.current = startX;
     touchStartY.current = e.targetTouches[0].clientY;
-  }, []);
+    
+    // Only start tracking if: sidebar is open OR touch starts from left edge
+    if (sidebarOpen || startX < edgeThreshold) {
+      setIsSwipping(true);
+    }
+  }, [sidebarOpen]);
 
   const onTouchMove = useCallback((e: TouchEvent) => {
-    touchEndX.current = e.targetTouches[0].clientX;
-  }, []);
+    if (!enabled || !isSwipping) return;
+    
+    const currentX = e.targetTouches[0].clientX;
+    const deltaX = currentX - touchStartX.current;
+    const deltaY = Math.abs(e.targetTouches[0].clientY - touchStartY.current);
+    
+    // Only track horizontal swipes
+    if (Math.abs(deltaX) > deltaY) {
+      // Calculate progress (0 to 1)
+      const maxDistance = 150;
+      let progress = deltaX / maxDistance;
+      
+      // If sidebar is open, we track left swipes (negative progress)
+      // If sidebar is closed, we track right swipes (positive progress)
+      if (sidebarOpen) {
+        progress = Math.max(-1, Math.min(0, progress));
+      } else {
+        progress = Math.max(0, Math.min(1, progress));
+      }
+      
+      setSwipeProgress(progress);
+    }
+  }, [enabled, isSwipping, sidebarOpen]);
 
   const onTouchEnd = useCallback(() => {
-    if (!enabled) return;
+    if (!enabled || !isSwipping) {
+      setIsSwipping(false);
+      setSwipeProgress(0);
+      return;
+    }
     
-    const deltaX = touchEndX.current - touchStartX.current;
-    const deltaY = Math.abs(touchStartY.current - (touchEndX.current ? touchEndX.current : touchStartX.current));
+    const deltaX = swipeProgress * 150;
     
-    // Only trigger if horizontal swipe is dominant
-    if (Math.abs(deltaX) > minSwipeDistance && Math.abs(deltaX) > deltaY) {
-      if (deltaX < 0) {
+    if (Math.abs(deltaX) > minSwipeDistance) {
+      if (deltaX < 0 && sidebarOpen) {
         onSwipeLeft();
-      } else {
+      } else if (deltaX > 0 && !sidebarOpen) {
         onSwipeRight();
       }
     }
     
-    // Reset
-    touchEndX.current = 0;
-  }, [enabled, onSwipeLeft, onSwipeRight]);
+    setIsSwipping(false);
+    setSwipeProgress(0);
+  }, [enabled, isSwipping, swipeProgress, sidebarOpen, onSwipeLeft, onSwipeRight]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -79,6 +111,8 @@ function useSwipeGesture(
       document.removeEventListener('touchend', onTouchEnd);
     };
   }, [enabled, onTouchStart, onTouchMove, onTouchEnd]);
+
+  return { swipeProgress, isSwipping };
 }
 
 export function Sidebar({
@@ -102,11 +136,12 @@ export function Sidebar({
   const [openSectorIds, setOpenSectorIds] = useState<Set<string>>(new Set());
   const isMobile = useIsMobile();
 
-  // Swipe gestures for mobile
-  useSwipeGesture(
+  // Swipe gestures for mobile with visual feedback
+  const { swipeProgress, isSwipping } = useSwipeGesture(
     () => onCollapsedChange(true),  // Swipe left = close
     () => onCollapsedChange(false), // Swipe right = open
-    isMobile
+    isMobile,
+    !collapsed
   );
 
   // Auto-collapse sidebar on mobile
@@ -154,10 +189,28 @@ export function Sidebar({
 
   return (
     <>
-      {/* Mobile overlay */}
-      {isMobile && !collapsed && (
+      {/* Swipe indicator - edge glow when starting to swipe */}
+      {isMobile && isSwipping && collapsed && swipeProgress > 0 && (
         <div 
-          className="fixed inset-0 bg-black/50 z-40 transition-opacity duration-300"
+          className="fixed left-0 top-0 h-full w-1 z-[55] pointer-events-none transition-opacity"
+          style={{
+            background: `linear-gradient(to right, hsl(var(--primary) / ${swipeProgress * 0.8}), transparent)`,
+            boxShadow: `0 0 ${swipeProgress * 30}px ${swipeProgress * 15}px hsl(var(--primary) / ${swipeProgress * 0.4})`,
+          }}
+        />
+      )}
+
+      {/* Mobile overlay with dynamic opacity based on swipe */}
+      {isMobile && (!collapsed || (isSwipping && swipeProgress > 0.3)) && (
+        <div 
+          className="fixed inset-0 bg-black z-40 transition-opacity duration-300"
+          style={{
+            opacity: collapsed 
+              ? swipeProgress * 0.5 
+              : isSwipping 
+                ? 0.5 + (swipeProgress * 0.5) // swipeProgress is negative when closing
+                : 0.5
+          }}
           onClick={() => onCollapsedChange(true)}
         />
       )}
